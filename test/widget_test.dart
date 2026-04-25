@@ -1,30 +1,18 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
+import 'package:dangdang/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dangdang/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('food analysis result screen renders key sections', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const DangDangApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('\uC2DD\uB2E8 \uC0C1\uC138'), findsOneWidget);
+    expect(
+      find.text('\uBE44\uBE54\uBC25, \uB41C\uC7A5\uAD6D'),
+      findsOneWidget,
+    );
+    expect(find.text('\uCD1D \uC601\uC591 \uC815\uBCF4 \uD569\uACC4'), findsOneWidget);
+    expect(find.text('AI \uC2DD\uB2E8 \uBD84\uC11D'), findsOneWidget);
   });
 }
