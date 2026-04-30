@@ -2,6 +2,8 @@ import 'package:dangdang/screens/food_analysis_result_page.dart';
 import 'package:flutter/material.dart';
 import 'main_navigator.dart';
 
+import 'screens/food_record_page.dart';
+
 void main() {
   runApp(const DangDangApp());
 }
