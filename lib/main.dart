@@ -1,4 +1,6 @@
+import 'package:dangdang/screens/food_analysis_result_page.dart';
 import 'package:flutter/material.dart';
+import 'main_navigator.dart';
 
 import 'screens/food_record_page.dart';
 
@@ -12,14 +14,14 @@ class DangDangApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DangDang',
+      title: '당당하게',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4B5CF0)),
-        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2F69FE)),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white,
       ),
-      home: const FoodRecordPage(),
+      home: const MainNavigator(),
     );
   }
 }
