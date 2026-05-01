@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'camera_screen.dart';
+import '../camera_screen.dart';
 
-class HomeDashboard extends StatelessWidget {
-  const HomeDashboard({super.key});
+class HomeDashboardPage extends StatelessWidget {
+  const HomeDashboardPage({super.key});
 
   // '식단 촬영' 버튼을 눌렀을 때 하단 바텀 시트를 띄우는 함수
   void _showDietCaptureBottomSheet(BuildContext context) {
@@ -42,15 +42,30 @@ class HomeDashboard extends StatelessWidget {
 
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CameraScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const CameraScreen(),
+                    ),
                   );
                 },
-                icon: const Icon(Icons.camera_alt, color: Colors.white, size: 24),
-                label: const Text('카메라로 촬영하기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                icon: const Icon(
+                  Icons.camera_alt,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                label: const Text(
+                  '카메라로 촬영하기',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2F69FE), // 파란색
                   minimumSize: const Size(double.infinity, 60), // 가로 가득, 세로 60
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   elevation: 5, // 그림자
                 ),
               ),
@@ -61,14 +76,21 @@ class HomeDashboard extends StatelessWidget {
                 onPressed: () {
                   // TODO: 갤러리 열기 기능 구현 예정
                   Navigator.pop(context); // 시트 닫기
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('갤러리를 엽니다.')));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('갤러리를 엽니다.')));
                 },
                 icon: const Icon(Icons.add, color: Color(0xFF555555), size: 24),
-                label: const Text('갤러리에서 선택하기', style: TextStyle(color: Color(0xFF555555), fontSize: 18)),
+                label: const Text(
+                  '갤러리에서 선택하기',
+                  style: TextStyle(color: Color(0xFF555555), fontSize: 18),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF2F4F7), // 연한 회색
                   minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -103,7 +125,10 @@ class HomeDashboard extends StatelessWidget {
                   children: [
                     Text(
                       '안녕하세요, 김당뇨님!',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -116,7 +141,14 @@ class HomeDashboard extends StatelessWidget {
                 CircleAvatar(
                   radius: 25,
                   backgroundColor: const Color(0xFFE8F0FE),
-                  child: const Text('김', style: TextStyle(color: Color(0xFF2F69FE), fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    '김',
+                    style: TextStyle(
+                      color: Color(0xFF2F69FE),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -136,14 +168,24 @@ class HomeDashboard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF5B8EFF), // 좀 더 연한 파란색
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text('최근 혈당', style: TextStyle(color: Colors.white, fontSize: 12)),
+                        child: const Text(
+                          '최근 혈당',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
                       ),
-                      const Icon(Icons.trending_up, color: Colors.white, size: 20),
+                      const Icon(
+                        Icons.trending_up,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 25),
@@ -153,7 +195,11 @@ class HomeDashboard extends StatelessWidget {
                     children: [
                       Text(
                         '105',
-                        style: TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 56,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(width: 8),
                       Text(
@@ -176,15 +222,29 @@ class HomeDashboard extends StatelessWidget {
             Row(
               children: [
                 // 혈당 기록 버튼 (plus icon)
-                _buildActionButton(Icons.add_circle_outline, '혈당 기록', const Color(0xFFE8F0FE), const Color(0xFF2F69FE), () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('혈당 기록 화면으로 이동합니다.')));
-                }),
+                _buildActionButton(
+                  Icons.add_circle_outline,
+                  '혈당 기록',
+                  const Color(0xFFE8F0FE),
+                  const Color(0xFF2F69FE),
+                  () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('혈당 기록 화면으로 이동합니다.')),
+                    );
+                  },
+                ),
                 const SizedBox(width: 20),
                 // 식단 촬영 버튼 (camera icon) - 핵심 기능
-                _buildActionButton(Icons.camera_alt_outlined, '식단 촬영', const Color(0xFFE8FAF1), const Color(0xFF12B76A), () {
-                  // 버튼을 눌렀을 때 하단 시트를 띄움
-                  _showDietCaptureBottomSheet(context);
-                }),
+                _buildActionButton(
+                  Icons.camera_alt_outlined,
+                  '식단 촬영',
+                  const Color(0xFFE8FAF1),
+                  const Color(0xFF12B76A),
+                  () {
+                    // 버튼을 눌렀을 때 하단 시트를 띄움
+                    _showDietCaptureBottomSheet(context);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 35),
@@ -195,8 +255,20 @@ class HomeDashboard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('혈당 리포트', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    TextButton(onPressed: () {}, child: const Text('자세히 보기', style: TextStyle(color: Color(0xFF2F69FE)))),
+                    const Text(
+                      '혈당 리포트',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text(
+                        '자세히 보기',
+                        style: TextStyle(color: Color(0xFF2F69FE)),
+                      ),
+                    ),
                   ],
                 ),
                 Container(
@@ -207,7 +279,12 @@ class HomeDashboard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   // 임시 그래프 이미지 플레이스홀더
-                  child: const Center(child: Text('그래프 영역 (그래프 패키지 필요)', style: TextStyle(color: Colors.grey))),
+                  child: const Center(
+                    child: Text(
+                      '그래프 영역 (그래프 패키지 필요)',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -218,7 +295,13 @@ class HomeDashboard extends StatelessWidget {
   }
 
   // 개별 버튼 생성기 위젯
-  Widget _buildActionButton(IconData icon, String label, Color bgColor, Color iconColor, VoidCallback onTap) {
+  Widget _buildActionButton(
+    IconData icon,
+    String label,
+    Color bgColor,
+    Color iconColor,
+    VoidCallback onTap,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -249,7 +332,13 @@ class HomeDashboard extends StatelessWidget {
                 child: Icon(icon, size: 30, color: iconColor),
               ),
               const SizedBox(height: 15),
-              Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
