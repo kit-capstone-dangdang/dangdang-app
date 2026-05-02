@@ -57,8 +57,19 @@ class MealRecordPage extends StatelessWidget {
                             ),
                           );
                         },
-                        onEdit: () {},
-                        onDelete: () {},
+                        onEdit: () {
+                          // 💡 수정 아이콘을 누르면 0.1인분 조절 화면으로 이동!
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const MealAnalysisResultPage(),
+                            ),
+                          );
+                        },
+                        onDelete: () {
+                          // 나중에 삭제 확인 팝업(Dialog) 띄우는 코드를 넣을 자리
+                        },
                       ),
                       const SizedBox(height: 25),
 
@@ -77,8 +88,19 @@ class MealRecordPage extends StatelessWidget {
                             ),
                           );
                         },
-                        onEdit: () {},
-                        onDelete: () {},
+                        onEdit: () {
+                          // 💡 수정 아이콘을 누르면 0.1인분 조절 화면으로 이동!
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const MealAnalysisResultPage(),
+                            ),
+                          );
+                        },
+                        onDelete: () {
+                          // 나중에 삭제 확인 팝업(Dialog) 띄우는 코드를 넣을 자리
+                        },
                       ),
                     ],
                   ),
@@ -233,20 +255,31 @@ class _FoodRecordCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             // 수정/삭제 아이콘 영역
+            // 수정/삭제 아이콘 영역
             Row(
               children: [
                 CustomIcon(
                   icon: Icons.edit_outlined,
                   size: 24,
                   iconColor: Colors.grey.shade400,
-                  onPressed: () {},
+                  onPressed: () {
+                    // 💡 여기서도 상세 수정 화면으로 이동하도록 연결!
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MealAnalysisResultPage(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 10),
                 CustomIcon(
                   icon: Icons.delete_outlined,
                   size: 24,
                   iconColor: Colors.grey.shade400,
-                  onPressed: () {},
+                  onPressed: () {
+                    // 삭제 로직 (예: 정말 삭제하시겠습니까? 알림창 띄우기)
+                  },
                 ),
               ],
             ),

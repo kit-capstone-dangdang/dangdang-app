@@ -2,14 +2,29 @@ import 'package:dangdang/data/food_analysis_result_dummy_data.dart';
 import 'package:flutter/material.dart';
 import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
+import 'meal_edit_page.dart';
 
-class MealAnalysisResultPage extends StatelessWidget {
+class MealAnalysisResultPage extends StatefulWidget {
   const MealAnalysisResultPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const result = dummyFoodAnalysisResult;
+  State<MealAnalysisResultPage> createState() => _MealAnalysisResultPageState();
+}
 
+class _MealAnalysisResultPageState extends State<MealAnalysisResultPage> {
+  // 화면에 보여줄 총 칼로리를 상태(State) 변수로 만듭니다.
+  late int _currentTotalCalories;
+  final result = dummyFoodAnalysisResult;
+
+  @override
+  void initState() {
+    super.initState();
+    // 처음 화면이 켜질 때는 더미 데이터의 칼로리를 쏙 가져옵니다.
+    _currentTotalCalories = result.totalCalories;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -43,14 +58,24 @@ class MealAnalysisResultPage extends StatelessWidget {
                   icon: Icons.edit_outlined,
                   backgroundColor: Colors.grey.shade100,
                   iconColor: Colors.black,
-                  onPressed: () {},
+                  onPressed: () {
+                    // 💡 연필 아이콘을 누르면 0.1인분 조절 화면으로 이동!
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MealEditPage(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 10),
                 CustomIcon(
                   icon: Icons.delete_outlined,
                   backgroundColor: Colors.grey.shade100,
                   iconColor: Colors.red,
-                  onPressed: () {},
+                  onPressed: () {
+                    // 삭제 기능은 나중에!
+                  },
                 ),
                 const SizedBox(width: 24),
               ],
