@@ -1,7 +1,7 @@
 import '../widgets/common/custom_icon.dart';
 import 'package:flutter/material.dart';
 import 'meal_analysis_result_page.dart';
-import '../widgets/meal/meal_record_card.dart';
+import '../widgets/meal_record/meal_record_card.dart';
 import '../widgets/date/date_header.dart';
 
 class MealRecordPage extends StatelessWidget {
@@ -9,6 +9,8 @@ class MealRecordPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return SafeArea(
       child: Stack(
         children: [
@@ -18,16 +20,15 @@ class MealRecordPage extends StatelessWidget {
                 floating: true,
                 pinned: false,
                 snap: true,
-                backgroundColor: Colors.white,
-                surfaceTintColor: Colors.white,
+                backgroundColor: colorScheme.surface,
+                surfaceTintColor: colorScheme.surface,
                 toolbarHeight: 70,
                 automaticallyImplyLeading: false,
-                title: const Text(
+                title: Text(
                   '식단 기록',
-                  style: TextStyle(
-                    fontSize: 30,
+                  style: textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -93,7 +94,7 @@ class MealRecordPage extends StatelessWidget {
             bottom: 20,
             child: FloatingActionButton(
               onPressed: () {},
-              backgroundColor: Colors.green,
+              backgroundColor: colorScheme.secondary,
               shape: const CircleBorder(),
               elevation: 6,
               child: const Icon(

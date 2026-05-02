@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import './screens/home_dashboard_page.dart';
-import 'screens/meal_record_page.dart';
-import 'widgets/common/custom_bottom_navigation_bar.dart';
+import '../screens/home_dashboard_page.dart';
+import '../screens/meal_record_page.dart';
+import '../widgets/common/custom_bottom_navigation_bar.dart';
 
 class MainNavigator extends StatefulWidget {
   const MainNavigator({super.key});
