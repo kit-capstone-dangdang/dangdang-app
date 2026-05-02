@@ -1,14 +1,30 @@
 import 'package:dangdang/data/food_analysis_result_dummy_data.dart';
 import 'package:flutter/material.dart';
-import '../widgets/custom_bottom_navigation_bar.dart';
+import '../widgets/common/custom_card.dart';
+import '../widgets/common/custom_icon.dart';
+import 'meal_edit_page.dart';
 
-class FoodAnalysisResultPage extends StatelessWidget {
-  const FoodAnalysisResultPage({super.key});
+class MealAnalysisResultPage extends StatefulWidget {
+  const MealAnalysisResultPage({super.key});
+
+  @override
+  State<MealAnalysisResultPage> createState() => _MealAnalysisResultPageState();
+}
+
+class _MealAnalysisResultPageState extends State<MealAnalysisResultPage> {
+  // 화면에 보여줄 총 칼로리를 상태(State) 변수로 만듭니다.
+  late int _currentTotalCalories;
+  final result = dummyFoodAnalysisResult;
+
+  @override
+  void initState() {
+    super.initState();
+    // 처음 화면이 켜질 때는 더미 데이터의 칼로리를 쏙 가져옵니다.
+    _currentTotalCalories = result.totalCalories;
+  }
 
   @override
   Widget build(BuildContext context) {
-    const result = dummyFoodAnalysisResult;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -22,7 +38,7 @@ class FoodAnalysisResultPage extends StatelessWidget {
               surfaceTintColor: Colors.white,
               toolbarHeight: 70,
               leading: IconButton(
-                onPressed: () {},
+                onPressed: () => Navigator.pop(context),
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   color: Colors.black,
@@ -38,18 +54,30 @@ class FoodAnalysisResultPage extends StatelessWidget {
               ),
               centerTitle: false,
               actions: [
-                _buildIconButton(
-                  Icons.edit_outlined,
-                  const Color(0xFFF2F4FB),
-                  Colors.black,
+                CustomIcon(
+                  icon: Icons.edit_outlined,
+                  backgroundColor: Colors.grey.shade100,
+                  iconColor: Colors.black,
+                  onPressed: () {
+                    // 💡 연필 아이콘을 누르면 0.1인분 조절 화면으로 이동!
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MealEditPage(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 10),
-                _buildIconButton(
-                  Icons.delete_outline_outlined,
-                  const Color(0xFFF2F4FB),
-                  Colors.red,
+                CustomIcon(
+                  icon: Icons.delete_outlined,
+                  backgroundColor: Colors.grey.shade100,
+                  iconColor: Colors.red,
+                  onPressed: () {
+                    // 삭제 기능은 나중에!
+                  },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 24),
               ],
             ),
             SliverToBoxAdapter(
@@ -58,38 +86,27 @@ class FoodAnalysisResultPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 음식 사진 영역
-                    Container(
-                      height: 300,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(38),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.fastfood,
-                          size: 64,
-                          color: Colors.orange,
+                    // 1. 음식 사진 영역 (사진은 곡률이 달라 CustomCard 대신 유지하거나 매개변수 조절)
+                    CustomCard(
+                      padding: EdgeInsets.zero, // 사진 꽉 차게
+                      borderRadius: 38,
+                      backgroundColor: Colors.grey[300]!,
+                      child: const SizedBox(
+                        height: 300,
+                        width: double.infinity,
+                        child: Center(
+                          child: Icon(
+                            Icons.fastfood,
+                            size: 64,
+                            color: Colors.orange,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 22),
 
-                    // 영양 요약 카드
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                    // 2. 영양 요약 카드
+                    CustomCard(
                       child: Column(
                         children: [
                           Row(
@@ -107,7 +124,7 @@ class FoodAnalysisResultPage extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.blue,
+                                  color: Color.fromARGB(255, 17, 48, 189),
                                 ),
                               ),
                             ],
@@ -132,82 +149,61 @@ class FoodAnalysisResultPage extends StatelessWidget {
                     const SizedBox(height: 22),
 
                     // 상세 품목 타이틀
-                    Text(
-                      '상세 품목 (${result.items.length})',
-                      style: const TextStyle(
+                    const Text(
+                      '상세 품목',
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 10),
 
-                    // 음식 아이템 리스트
+                    // 3. 음식 아이템 리스트 (CustomCard 적용)
                     ...result.items.map(
-                      (item) => Container(
-                        padding: const EdgeInsets.all(22),
-                        margin: const EdgeInsets.only(bottom: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: CustomCard(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  item.servingText,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w200,
-                                    color: Colors.grey,
+                                  Text(
+                                    item.servingText,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w200,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              '${item.calories} kcal',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.blue,
+                                ],
                               ),
-                            ),
-                          ],
+                              Text(
+                                '${item.calories} kcal',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color.fromARGB(255, 17, 48, 189),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
 
-                    // AI 분석 카드
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 240, 253, 226),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                    // 4. AI 분석 카드 (CustomCard 배경색 변경 적용)
+                    CustomCard(
+                      backgroundColor: const Color.fromARGB(255, 240, 253, 226),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -233,13 +229,11 @@ class FoodAnalysisResultPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 22),
 
-                    // 목록으로 돌아가기 버튼
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 6, 77, 134),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
+                    // 5. 목록으로 돌아가기 버튼 (CustomCard를 버튼처럼 사용)
+                    CustomCard(
+                      onTap: () => Navigator.pop(context),
+                      backgroundColor: const Color.fromARGB(255, 6, 77, 134),
+                      showShadow: false, // 버튼은 그림자 제외 (선택사항)
                       child: const Center(
                         child: Text(
                           '목록으로 돌아가기',
@@ -258,26 +252,11 @@ class FoodAnalysisResultPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 2),
     );
   }
 }
 
-Widget _buildIconButton(IconData icon, Color bgColor, Color iconColor) {
-  return Container(
-    width: 50,
-    height: 50,
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: IconButton(
-      onPressed: () {},
-      icon: Icon(icon, color: iconColor),
-    ),
-  );
-}
-
+// 영양소 위젯 (이것도 필요하면 별도 파일로 분리 가능)
 Widget _buildNutrient(String label, String value, bool isHighlight) {
   return Container(
     padding: const EdgeInsets.all(18),
