@@ -94,7 +94,7 @@ class MealRecordPage extends StatelessWidget {
             bottom: 20,
             child: FloatingActionButton(
               onPressed: () {},
-              backgroundColor: colorScheme.secondary,
+              backgroundColor: Colors.green,
               shape: const CircleBorder(),
               elevation: 6,
               child: const Icon(
