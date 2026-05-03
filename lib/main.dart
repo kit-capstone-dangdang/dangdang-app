@@ -1,3 +1,4 @@
+import 'package:dangdang/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'navigation/main_navigator.dart';
 
@@ -23,6 +24,7 @@ class DangDangApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       home: const MainNavigator(),
+      //home: const HealthDataScreen(),
     );
   }
 }
