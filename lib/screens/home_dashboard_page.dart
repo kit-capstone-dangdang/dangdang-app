@@ -1,4 +1,6 @@
+import 'package:dangdang/features/image_input/image_picker_service.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../camera_screen.dart';
 import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
@@ -7,6 +9,8 @@ class HomeDashboardPage extends StatelessWidget {
   const HomeDashboardPage({super.key});
 
   void _showDietCaptureBottomSheet(BuildContext context) {
+    final ImagePickerService imagePickerService = ImagePickerService();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -37,14 +41,18 @@ class HomeDashboardPage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CameraScreen(),
-                    ),
-                  );
+
+                  final XFile? image = await imagePickerService
+                      .pickFromCamera();
+
+                  if (image != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CameraScreen()),
+                    );
+                  }
                 },
                 icon: Icon(
                   Icons.camera_alt,
@@ -69,8 +77,16 @@ class HomeDashboardPage extends StatelessWidget {
               ),
               const SizedBox(height: 15),
               ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
+
+                  final XFile? image = await imagePickerService
+                      .pickFromGallery();
+
+                  if (image != null) {
+                    print('선택 완료: ${image.path}');
+                  }
+
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(const SnackBar(content: Text('갤러리를 엽니다.')));
