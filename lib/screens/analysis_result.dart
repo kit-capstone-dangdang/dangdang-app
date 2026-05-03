@@ -1,6 +1,6 @@
 import 'package:dangdang/data/food_analysis_result_dummy_data.dart';
 import 'package:flutter/material.dart';
-import '../widgets/custom_bottom_navigation_bar.dart';
+
 
 class AnalysisResult extends StatelessWidget {
   const AnalysisResult({super.key});
@@ -116,7 +116,7 @@ class AnalysisResult extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.blue,
+                                color: Color(0xFF2F69FE),
                               ),
                             ),
                           ],
@@ -129,7 +129,7 @@ class AnalysisResult extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 6, 77, 134),
+                        color: const Color(0xFF2F69FE),
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: const Center(
@@ -173,7 +173,6 @@ class AnalysisResult extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 2),
     );
   }
 }
