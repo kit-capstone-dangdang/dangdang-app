@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "959037542828",
+    "project_id": "dangdang-app",
+    "storage_bucket": "dangdang-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:959037542828:android:1ac0790b66ce33d9f6ea09",
+        "android_client_info": {
+          "package_name": "com.example.dangdang"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHANhRlAN_etGgx3beKciU9AOsiIeTmVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
