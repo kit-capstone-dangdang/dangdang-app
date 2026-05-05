@@ -3,6 +3,7 @@ import 'navigation/main_navigator.dart';
 
 void main() {
   runApp(const DangDangApp());
+  
 }
 
 class DangDangApp extends StatelessWidget {
