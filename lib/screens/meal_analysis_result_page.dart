@@ -1,18 +1,31 @@
 import 'package:dangdang/data/food_analysis_result_dummy_data.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
 import '../widgets/meal_analysis_result/nutrition_summary_card.dart';
 import '../widgets/meal_analysis_result/food_detail_item_card.dart';
+import 'dart:io';
 
 class MealAnalysisResultPage extends StatelessWidget {
-  const MealAnalysisResultPage({super.key});
+  final XFile image;
+  final Map<String, dynamic> analysisResult;
+
+  const MealAnalysisResultPage({
+    super.key,
+    required this.image,
+    required this.analysisResult,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const result = dummyFoodAnalysisResult;
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+
+    final totalNutrition =
+        analysisResult['totalNutrition'] as Map<String, dynamic>;
+    final foods = analysisResult['foods'] as List<dynamic>;
+    final aiComment = analysisResult['aiComment'] ?? '';
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -64,20 +77,18 @@ class MealAnalysisResultPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. 음식 사진 영역 (사진은 곡률이 달라 CustomCard 대신 유지하거나 매개변수 조절)
+                    // 1. 음식 사진 영역
                     CustomCard(
-                      padding: EdgeInsets.zero, // 사진 꽉 차게
+                      padding: EdgeInsets.zero,
                       borderRadius: 38,
                       backgroundColor: Colors.grey.shade200,
-                      child: const SizedBox(
-                        height: 300,
-                        width: double.infinity,
-                        child: Center(
-                          child: Icon(
-                            Icons.fastfood,
-                            size: 64,
-                            color: Colors.orange,
-                          ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(38),
+                        child: Image.file(
+                          File(image.path),
+                          height: 300,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
@@ -97,7 +108,7 @@ class MealAnalysisResultPage extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${result.totalCalories} kcal',
+                                '${totalNutrition['calories']} kcal',
                                 style: textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w800,
                                   color: colorScheme.primary,
@@ -111,19 +122,19 @@ class MealAnalysisResultPage extends StatelessWidget {
                             children: [
                               NutritionSummaryCard(
                                 label: '탄수',
-                                value: '${result.carbohydrates}g',
+                                value: '${totalNutrition['carbohydrate']}g',
                               ),
                               NutritionSummaryCard(
                                 label: '단백',
-                                value: '${result.protein}g',
+                                value: '${totalNutrition['protein']}g',
                               ),
                               NutritionSummaryCard(
                                 label: '지방',
-                                value: '${result.fat}g',
+                                value: '${totalNutrition['fat']}g',
                               ),
                               NutritionSummaryCard(
                                 label: '당류',
-                                value: '${result.sugar}g',
+                                value: '${totalNutrition['sugar']}g',
                                 isHighlight: true,
                               ),
                             ],
@@ -137,7 +148,7 @@ class MealAnalysisResultPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: 5),
                       child: Text(
-                        '상세 품목 (2)',
+                        '상세 품목 (${foods.length})',
                         style: textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
@@ -146,9 +157,11 @@ class MealAnalysisResultPage extends StatelessWidget {
                     const SizedBox(height: 10),
 
                     // 3. 음식 아이템 리스트 (CustomCard 적용)
-                    ...result.items.map(
-                      (item) => FoodDetailItemCard(item: item),
-                    ),
+                    ...foods.map((food) {
+                      return FoodDetailItemCard(
+                        item: food as Map<String, dynamic>,
+                      );
+                    }),
                     const SizedBox(height: 10),
 
                     // 4. AI 분석 카드 (CustomCard 배경색 변경 적용)
@@ -166,7 +179,7 @@ class MealAnalysisResultPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            result.aiComment,
+                            aiComment,
                             style: textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w200,
                               color: Colors.green,

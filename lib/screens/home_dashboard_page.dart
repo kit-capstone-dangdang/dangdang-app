@@ -1,15 +1,17 @@
 import 'package:dangdang/features/image_input/image_picker_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../camera_screen.dart';
 import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
+import '../services/gemini_service.dart';
+import '../screens/meal_analysis_result_page.dart';
 
 class HomeDashboardPage extends StatelessWidget {
   const HomeDashboardPage({super.key});
 
   void _showDietCaptureBottomSheet(BuildContext context) {
     final ImagePickerService imagePickerService = ImagePickerService();
+    final parentContext = context;
 
     showModalBottomSheet(
       context: context,
@@ -42,16 +44,39 @@ class HomeDashboardPage extends StatelessWidget {
               const SizedBox(height: 30),
               ElevatedButton.icon(
                 onPressed: () async {
-                  Navigator.pop(context);
+                  Navigator.pop(parentContext);
 
                   final XFile? image = await imagePickerService
                       .pickFromCamera();
 
-                  if (image != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CameraScreen()),
-                    );
+                  if (image != null && parentContext.mounted) {
+                    try {
+                      final geminiService = GeminiService();
+
+                      final result = await geminiService.analyzeFoodImage(
+                        image,
+                      );
+
+                      if (!parentContext.mounted) return;
+
+                      Navigator.push(
+                        parentContext,
+                        MaterialPageRoute(
+                          builder: (context) => MealAnalysisResultPage(
+                            image: image,
+                            analysisResult: result,
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      // 에러 처리: 스낵바로 에러 메시지 표시
+                      ScaffoldMessenger.of(parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text('분석 중 오류가 발생했습니다: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   }
                 },
                 icon: Icon(
@@ -78,18 +103,40 @@ class HomeDashboardPage extends StatelessWidget {
               const SizedBox(height: 15),
               ElevatedButton.icon(
                 onPressed: () async {
-                  Navigator.pop(context);
+                  Navigator.pop(parentContext);
 
                   final XFile? image = await imagePickerService
                       .pickFromGallery();
 
-                  if (image != null) {
-                    print('선택 완료: ${image.path}');
-                  }
+                  if (image != null && parentContext.mounted) {
+                    try {
+                      final geminiService = GeminiService();
 
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('갤러리를 엽니다.')));
+                      final result = await geminiService.analyzeFoodImage(
+                        image,
+                      );
+
+                      if (!parentContext.mounted) return;
+
+                      Navigator.push(
+                        parentContext,
+                        MaterialPageRoute(
+                          builder: (context) => MealAnalysisResultPage(
+                            image: image,
+                            analysisResult: result,
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      // 에러 처리: 스낵바로 에러 메시지 표시
+                      ScaffoldMessenger.of(parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text('분석 중 오류가 발생했습니다: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 },
                 icon: Icon(
                   Icons.image_outlined,
