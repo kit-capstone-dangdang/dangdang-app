@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'navigation/main_navigator.dart';
 
 void main() {
