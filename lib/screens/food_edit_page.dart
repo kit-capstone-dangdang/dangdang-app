@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/food_analysis_result_dummy_data.dart';
 import '../widgets/food_item_card.dart';
-import '../widgets/custom_bottom_navigation_bar.dart';
 
 class FoodEditPage extends StatefulWidget {
   const FoodEditPage({super.key});
@@ -401,7 +400,6 @@ void initState() {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 2),
     );
   }
 }
