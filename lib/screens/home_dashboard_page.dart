@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
 import '../services/gemini_service.dart';
-import '../screens/meal_analysis_result_page.dart';
+import '../screens/analysis_result.dart';
 
 class HomeDashboardPage extends StatelessWidget {
   const HomeDashboardPage({super.key});
@@ -62,10 +62,8 @@ class HomeDashboardPage extends StatelessWidget {
                       Navigator.push(
                         parentContext,
                         MaterialPageRoute(
-                          builder: (context) => MealAnalysisResultPage(
-                            image: image,
-                            analysisResult: result,
-                          ),
+                          builder: (context) =>
+                              AnalysisResult(image: image, result: result),
                         ),
                       );
                     } catch (e) {
@@ -121,10 +119,8 @@ class HomeDashboardPage extends StatelessWidget {
                       Navigator.push(
                         parentContext,
                         MaterialPageRoute(
-                          builder: (context) => MealAnalysisResultPage(
-                            image: image,
-                            analysisResult: result,
-                          ),
+                          builder: (context) =>
+                              AnalysisResult(image: image, result: result),
                         ),
                       );
                     } catch (e) {
