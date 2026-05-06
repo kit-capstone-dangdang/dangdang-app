@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'meal_analysis_result_page.dart';
 import '../widgets/meal_record/meal_record_card.dart';
 import '../widgets/date/date_header.dart';
 
@@ -10,6 +9,7 @@ class MealRecordPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       child: Stack(
         children: [
@@ -49,12 +49,8 @@ class MealRecordPage extends StatelessWidget {
                         foodName: '비빔밥, 된장국',
                         itemCount: 2,
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MealAnalysisResultPage(),
-                            ),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('식단 상세 기능 준비 중입니다.')),
                           );
                         },
                         onEdit: () {},
@@ -69,12 +65,8 @@ class MealRecordPage extends StatelessWidget {
                         foodName: '아보카도 비빔밥, 오이무침, 김자반',
                         itemCount: 3,
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MealAnalysisResultPage(),
-                            ),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('식단 상세 기능 준비 중입니다.')),
                           );
                         },
                         onEdit: () {},

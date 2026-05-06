@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../common/custom_card.dart';
 
 class FoodDetailItemCard extends StatelessWidget {
-  final dynamic item;
+  final Map<String, dynamic> item;
 
   const FoodDetailItemCard({super.key, required this.item});
 
@@ -21,13 +21,13 @@ class FoodDetailItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.name,
+                  item['name'] ?? '',
                   style: textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 Text(
-                  item.servingText,
+                  item['amount'] ?? '',
                   style: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w400,
                     color: Colors.grey,
@@ -36,7 +36,7 @@ class FoodDetailItemCard extends StatelessWidget {
               ],
             ),
             Text(
-              '${item.calories} kcal',
+              '${item['calories']} kcal',
               style: textTheme.titleMedium?.copyWith(
                 color: colorScheme.primary,
                 fontWeight: FontWeight.w700,
