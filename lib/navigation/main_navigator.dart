@@ -16,7 +16,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<Widget> _screens = [
     const HomeDashboardPage(),
     const Center(child: Text('혈당 기록 화면')),
-    //const MealRecordPage(),
+    const MealRecordPage(),
     const Center(child: Text('AI 챗 화면')),
   ];
 

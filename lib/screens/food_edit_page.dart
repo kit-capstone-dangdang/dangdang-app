@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import '../data/food_analysis_result_dummy_data.dart';
-import '../widgets/food_item_card.dart';
+import 'package:image_picker/image_picker.dart';
 
 class FoodEditPage extends StatefulWidget {
-  const FoodEditPage({super.key});
+  final XFile? image;
+  final Map<String, dynamic> result;
+
+  const FoodEditPage({super.key, required this.image, required this.result});
 
   @override
   State<FoodEditPage> createState() => _FoodEditPageState();
@@ -14,6 +18,70 @@ class _FoodEditPageState extends State<FoodEditPage> {
   TimeOfDay? selectedTime;
   String selectedMeal = '점심';
   List<double> quantities = [];
+
+  List<dynamic> get foods => widget.result['foods'] as List<dynamic>? ?? [];
+
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.round();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  double get totalCalories {
+    double total = 0;
+
+    for (int i = 0; i < foods.length; i++) {
+      final food = foods[i] as Map<String, dynamic>;
+      total += _toInt(food['calories']) * quantities[i];
+    }
+
+    return total;
+  }
+
+  int get totalCarbohydrate {
+    int total = 0;
+
+    for (int i = 0; i < foods.length; i++) {
+      final food = foods[i] as Map<String, dynamic>;
+      total += (_toInt(food['carbohydrate']) * quantities[i]).round();
+    }
+
+    return total;
+  }
+
+  int get totalProtein {
+    int total = 0;
+
+    for (int i = 0; i < foods.length; i++) {
+      final food = foods[i] as Map<String, dynamic>;
+      total += (_toInt(food['protein']) * quantities[i]).round();
+    }
+
+    return total;
+  }
+
+  int get totalFat {
+    int total = 0;
+
+    for (int i = 0; i < foods.length; i++) {
+      final food = foods[i] as Map<String, dynamic>;
+      total += (_toInt(food['fat']) * quantities[i]).round();
+    }
+
+    return total;
+  }
+
+  int get totalSugar {
+    int total = 0;
+
+    for (int i = 0; i < foods.length; i++) {
+      final food = foods[i] as Map<String, dynamic>;
+      total += (_toInt(food['sugar']) * quantities[i]).round();
+    }
+
+    return total;
+  }
 
   // 날짜 선택
   Future<void> _pickDate() async {
@@ -44,76 +112,35 @@ class _FoodEditPageState extends State<FoodEditPage> {
       });
     }
   }
-Widget _nutrientItem(String title, String value) {
-  return Column(
-    children: [
-      Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 12,
-        ),
-      ),
-      const SizedBox(height: 4),
-      Text(
-        value,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ],
-  );
-}
-void _selectMeal() {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) {
-      final meals = ['아침', '점심', '저녁', '야식'];
 
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: meals.map((meal) {
-            return ListTile(
-              title: Text(meal),
-              trailing: selectedMeal == meal
-                  ? const Icon(Icons.check, color: Colors.blue)
-                  : null,
-              onTap: () {
-                setState(() {
-                  selectedMeal = meal;
-                });
-                Navigator.pop(context);
-              },
-            );
-          }).toList(),
+  Widget _nutrientItem(String title, String value) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
-      );
-    },
-  );
-}
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
 
-@override
-void initState() {
-  super.initState();
-  final result = dummyFoodAnalysisResult;
+  @override
+  void initState() {
+    super.initState();
+    quantities = List.generate(foods.length, (index) => 1.0);
+  }
 
-  quantities = List.generate(result.items.length, (index) => 1.0);
-}
   @override
   Widget build(BuildContext context) {
-    final result = dummyFoodAnalysisResult;
-    double totalCalories = 0;
-
-    for (int i = 0; i < result.items.length; i++) {
-      totalCalories += result.items[i].calories * quantities[i];
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       body: SafeArea(
@@ -126,15 +153,12 @@ void initState() {
               surfaceTintColor: Colors.white,
               toolbarHeight: 70,
               leading: IconButton(
-                onPressed: () {},
+                onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
               title: const Text(
                 '식단 정보 확인',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
               ),
             ),
 
@@ -152,13 +176,23 @@ void initState() {
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(32),
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.fastfood,
-                          size: 64,
-                          color: Colors.orange,
-                        ),
-                      ),
+                      child: widget.image == null
+                          ? const Center(
+                              child: Icon(
+                                Icons.fastfood,
+                                size: 64,
+                                color: Colors.orange,
+                              ),
+                            )
+                          : ClipRRect(
+                              borderRadius: BorderRadius.circular(32),
+                              child: Image.file(
+                                File(widget.image!.path),
+                                width: double.infinity,
+                                height: 280,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                     ),
 
                     const SizedBox(height: 20),
@@ -191,10 +225,12 @@ void initState() {
                                 underline: const SizedBox(), // 밑줄 제거
                                 icon: const Icon(Icons.keyboard_arrow_down),
                                 items: ['아침', '점심', '저녁', '야식']
-                                    .map((meal) => DropdownMenuItem(
-                                          value: meal,
-                                          child: Text(meal),
-                                        ))
+                                    .map(
+                                      (meal) => DropdownMenuItem(
+                                        value: meal,
+                                        child: Text(meal),
+                                      ),
+                                    )
                                     .toList(),
                                 onChanged: (value) {
                                   setState(() {
@@ -203,7 +239,7 @@ void initState() {
                                 },
                               ),
                             ],
-                        ),
+                          ),
 
                           const SizedBox(height: 12),
 
@@ -217,21 +253,35 @@ void initState() {
                                   GestureDetector(
                                     onTap: _pickDate,
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFF1F3F5), // ⭐ 옅은 회색
+                                        color: const Color(
+                                          0xFFF1F3F5,
+                                        ), // ⭐ 옅은 회색
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Row(
                                         children: [
                                           Text(
                                             selectedDate == null
-                                                ? '${DateTime.now()}'.split(' ')[0]
-                                                : '${selectedDate!}'.split(' ')[0],
-                                            style: const TextStyle(fontSize: 14),
+                                                ? '${DateTime.now()}'.split(
+                                                    ' ',
+                                                  )[0]
+                                                : '${selectedDate!}'.split(
+                                                    ' ',
+                                                  )[0],
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
                                           ),
                                           const SizedBox(width: 6),
-                                          const Icon(Icons.calendar_today, size: 16),
+                                          const Icon(
+                                            Icons.calendar_today,
+                                            size: 16,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -240,7 +290,10 @@ void initState() {
                                   GestureDetector(
                                     onTap: _pickTime,
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF1F3F5),
                                         borderRadius: BorderRadius.circular(12),
@@ -249,12 +302,19 @@ void initState() {
                                         children: [
                                           Text(
                                             selectedTime == null
-                                                ? TimeOfDay.now().format(context)
+                                                ? TimeOfDay.now().format(
+                                                    context,
+                                                  )
                                                 : selectedTime!.format(context),
-                                            style: const TextStyle(fontSize: 14),
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
                                           ),
                                           const SizedBox(width: 6),
-                                          const Icon(Icons.access_time, size: 16),
+                                          const Icon(
+                                            Icons.access_time,
+                                            size: 16,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -270,7 +330,7 @@ void initState() {
                     const SizedBox(height: 20),
 
                     Text(
-                      '식단 구성 (${result.items.length})',
+                      '식단 구성 (${foods.length})',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -280,16 +340,74 @@ void initState() {
                     const SizedBox(height: 12),
 
                     Column(
-                      children: List.generate(result.items.length, (index) {
-                        final item = result.items[index];
-                        return FoodItemCard(
-                          item: item,
-                          quantity: quantities[index],
-                          onChanged: (value) {
-                            setState(() {
-                              quantities[index] = value;
-                            });
-                          },
+                      children: List.generate(foods.length, (index) {
+                        final item = foods[index] as Map<String, dynamic>;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name']?.toString() ?? '음식명 없음',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                item['amount']?.toString() ?? '',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                    onPressed: quantities[index] > 0.1
+                                        ? () {
+                                            setState(() {
+                                              quantities[index] = double.parse(
+                                                (quantities[index] - 0.1)
+                                                    .toStringAsFixed(1),
+                                              );
+                                            });
+                                          }
+                                        : null,
+                                    icon: const Icon(Icons.remove),
+                                  ),
+                                  Text(
+                                    '${quantities[index].toStringAsFixed(1)}인분',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        quantities[index] = double.parse(
+                                          (quantities[index] + 0.1)
+                                              .toStringAsFixed(1),
+                                        );
+                                      });
+                                    },
+                                    icon: const Icon(Icons.add),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         );
                       }).toList(),
                     ),
@@ -300,10 +418,7 @@ void initState() {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF3B82F6),
-                            Color(0xFF2563EB),
-                          ],
+                          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -355,15 +470,14 @@ void initState() {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _nutrientItem('탄수', '${result.carbohydrates}g'),
-                              _nutrientItem('단백', '${result.protein}g'),
-                              _nutrientItem('지방', '${result.fat}g'),
-                              _nutrientItem('당류', '${result.sugar}g'),
+                              _nutrientItem('탄수', '${totalCarbohydrate}g'),
+                              _nutrientItem('단백', '${totalProtein}g'),
+                              _nutrientItem('지방', '${totalFat}g'),
+                              _nutrientItem('당류', '${totalSugar}g'),
                             ],
                           ),
                         ],
                       ),
-    
                     ),
                     const SizedBox(height: 24),
 

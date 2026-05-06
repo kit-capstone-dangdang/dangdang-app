@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/common/custom_card.dart';
 import 'dart:io';
 import '../widgets/meal_analysis_result/food_detail_item_card.dart';
+import '../screens/food_edit_page.dart';
 
 class AnalysisResult extends StatelessWidget {
   final XFile? image;
@@ -90,7 +91,13 @@ class AnalysisResult extends StatelessWidget {
                       backgroundColor: const Color(0xFF2F69FE),
                       showShadow: false,
                       onTap: () {
-                        // TODO: 저장 기능
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                FoodEditPage(image: image, result: result),
+                          ),
+                        );
                       },
                       child: const Center(
                         child: Text(
