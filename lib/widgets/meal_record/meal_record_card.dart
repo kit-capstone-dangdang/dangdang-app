@@ -67,26 +67,19 @@ class MealRecordCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        time,
-                        style: textTheme.labelSmall?.copyWith(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      time,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const Spacer(),
-                    Flexible(
-                      child: Text(
-                        '$calories kcal',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
+                    Text(
+                      '$calories kcal',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -113,28 +106,24 @@ class MealRecordCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 5),
 
-          SizedBox(
-            width: 110,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CustomIcon(
-                  icon: Icons.edit_outlined,
-                  size: 24,
-                  iconColor: Colors.grey.shade400,
-                  onPressed: onEdit,
-                ),
-                const SizedBox(width: 10),
-                CustomIcon(
-                  icon: Icons.delete_outlined,
-                  size: 24,
-                  iconColor: Colors.grey.shade400,
-                  onPressed: onDelete,
-                ),
-              ],
-            ),
+          Row(
+            children: [
+              CustomIcon(
+                icon: Icons.edit_outlined,
+                size: 24,
+                iconColor: Colors.grey.shade400,
+                onPressed: onEdit,
+              ),
+              const SizedBox(width: 10),
+              CustomIcon(
+                icon: Icons.delete_outlined,
+                size: 24,
+                iconColor: Colors.grey.shade400,
+                onPressed: onDelete,
+              ),
+            ],
           ),
         ],
       ),
