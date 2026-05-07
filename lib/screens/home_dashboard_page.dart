@@ -6,6 +6,7 @@ import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
 import '../services/gemini_service.dart';
 import '../screens/analysis_result.dart';
+import '../model/meal_record.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -34,7 +35,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     try {
       final geminiService = GeminiService();
 
-      final result = await geminiService.analyzeFoodImage(image);
+      final mealRecord = await geminiService.analyzeFoodImage(
+        image: image,
+        mealType: '식사', // 기본값, 필요시 사용자 입력 받기
+        dateTime: DateTime.now(),
+      );
 
       if (!mounted) return;
 
@@ -45,7 +50,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AnalysisResult(image: image, result: result),
+          builder: (context) =>
+              AnalysisResult(image: image, result: mealRecord.toJson()),
         ),
       );
     } catch (e) {

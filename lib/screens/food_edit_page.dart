@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../model/food_item.dart';
+import '../model/meal_record.dart';
+import '../repositories/firebase_meal_repository.dart';
+
 class FoodEditPage extends StatefulWidget {
   final XFile? image;
   final Map<String, dynamic> result;
@@ -14,80 +18,188 @@ class FoodEditPage extends StatefulWidget {
 }
 
 class _FoodEditPageState extends State<FoodEditPage> {
+  final FirebaseMealRepository _mealRepository = FirebaseMealRepository();
+
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   String selectedMeal = '점심';
   List<double> quantities = [];
+  bool _isSaving = false;
 
   List<dynamic> get foods => widget.result['foods'] as List<dynamic>? ?? [];
 
-  int _toInt(dynamic value) {
-    if (value is int) return value;
-    if (value is double) return value.round();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
+  double _toDouble(dynamic value, {double defaultValue = 0.0}) {
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    if (value is String) return double.tryParse(value) ?? defaultValue;
+    return defaultValue;
+  }
+
+  String _amountLabelFromItem(Map<String, dynamic> item) {
+    final amountLabel = item['amountLabel']?.toString();
+    if (amountLabel != null && amountLabel.isNotEmpty) {
+      return amountLabel;
+    }
+
+    final amount = item['amount']?.toString();
+    if (amount != null && amount.isNotEmpty) {
+      return amount;
+    }
+
+    return '1인분';
+  }
+
+  double _calculateCalories({
+    required double carbohydrate,
+    required double protein,
+    required double fat,
+  }) {
+    return (carbohydrate * 4) + (protein * 4) + (fat * 9);
+  }
+
+  List<FoodItem> _buildFoodItems() {
+    return List.generate(foods.length, (index) {
+      final item = foods[index] as Map<String, dynamic>;
+      final quantity = quantities[index];
+
+      final baseCarbohydrate = _toDouble(item['carbohydrate']);
+      final baseProtein = _toDouble(item['protein']);
+      final baseFat = _toDouble(item['fat']);
+      final baseSugar = _toDouble(item['sugar']);
+
+      final carbohydrate = baseCarbohydrate * quantity;
+      final protein = baseProtein * quantity;
+      final fat = baseFat * quantity;
+      final sugar = baseSugar * quantity;
+      final calories = _calculateCalories(
+        carbohydrate: carbohydrate,
+        protein: protein,
+        fat: fat,
+      );
+
+      return FoodItem(
+        name: item['name']?.toString() ?? '',
+        amountLabel: _amountLabelFromItem(item),
+        servingCount: quantity,
+        calories: calories,
+        carbohydrate: carbohydrate,
+        protein: protein,
+        fat: fat,
+        sugar: sugar,
+      );
+    });
+  }
+
+  Map<String, double> _buildTotalNutrition(List<FoodItem> foodItems) {
+    double calories = 0;
+    double carbohydrate = 0;
+    double protein = 0;
+    double fat = 0;
+    double sugar = 0;
+
+    for (final food in foodItems) {
+      calories += food.calories;
+      carbohydrate += food.carbohydrate;
+      protein += food.protein;
+      fat += food.fat;
+      sugar += food.sugar;
+    }
+
+    return {
+      'calories': calories,
+      'carbohydrate': carbohydrate,
+      'protein': protein,
+      'fat': fat,
+      'sugar': sugar,
+    };
+  }
+
+  DateTime _buildSelectedDateTime() {
+    final now = DateTime.now();
+    final date = selectedDate ?? now;
+    final time = selectedTime ?? TimeOfDay.now();
+
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  MealRecord _buildMealRecord() {
+    final foodItems = _buildFoodItems();
+
+    return MealRecord(
+      id: '',
+      dateTime: _buildSelectedDateTime(),
+      mealType: selectedMeal,
+      foods: foodItems,
+      aiComment: widget.result['aiComment']?.toString() ?? '',
+      totalNutrition: _buildTotalNutrition(foodItems),
+    );
+  }
+
+  Future<void> _saveMealRecord() async {
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final mealRecord = _buildMealRecord();
+      await _mealRepository.createMeal(mealRecord);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('식단 기록이 저장되었습니다.')));
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('저장 중 오류가 발생했습니다: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (!mounted) return;
+
+      setState(() {
+        _isSaving = false;
+      });
+    }
   }
 
   double get totalCalories {
-    double total = 0;
-
-    for (int i = 0; i < foods.length; i++) {
-      final food = foods[i] as Map<String, dynamic>;
-      total += _toInt(food['calories']) * quantities[i];
-    }
-
-    return total;
+    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
+    return totalNutrition['calories'] ?? 0;
   }
 
   int get totalCarbohydrate {
-    int total = 0;
-
-    for (int i = 0; i < foods.length; i++) {
-      final food = foods[i] as Map<String, dynamic>;
-      total += (_toInt(food['carbohydrate']) * quantities[i]).round();
-    }
-
-    return total;
+    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
+    return (totalNutrition['carbohydrate'] ?? 0).round();
   }
 
   int get totalProtein {
-    int total = 0;
-
-    for (int i = 0; i < foods.length; i++) {
-      final food = foods[i] as Map<String, dynamic>;
-      total += (_toInt(food['protein']) * quantities[i]).round();
-    }
-
-    return total;
+    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
+    return (totalNutrition['protein'] ?? 0).round();
   }
 
   int get totalFat {
-    int total = 0;
-
-    for (int i = 0; i < foods.length; i++) {
-      final food = foods[i] as Map<String, dynamic>;
-      total += (_toInt(food['fat']) * quantities[i]).round();
-    }
-
-    return total;
+    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
+    return (totalNutrition['fat'] ?? 0).round();
   }
 
   int get totalSugar {
-    int total = 0;
-
-    for (int i = 0; i < foods.length; i++) {
-      final food = foods[i] as Map<String, dynamic>;
-      total += (_toInt(food['sugar']) * quantities[i]).round();
-    }
-
-    return total;
+    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
+    return (totalNutrition['sugar'] ?? 0).round();
   }
 
-  // 날짜 선택
   Future<void> _pickDate() async {
-    DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -99,11 +211,10 @@ class _FoodEditPageState extends State<FoodEditPage> {
     }
   }
 
-  // 시간 선택
   Future<void> _pickTime() async {
-    TimeOfDay? picked = await showTimePicker(
+    final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: selectedTime ?? TimeOfDay.now(),
     );
 
     if (picked != null) {
@@ -136,7 +247,10 @@ class _FoodEditPageState extends State<FoodEditPage> {
   @override
   void initState() {
     super.initState();
-    quantities = List.generate(foods.length, (index) => 1.0);
+    quantities = List.generate(foods.length, (index) {
+      final item = foods[index] as Map<String, dynamic>;
+      return _toDouble(item['servingCount'], defaultValue: 1.0);
+    });
   }
 
   @override
@@ -161,14 +275,12 @@ class _FoodEditPageState extends State<FoodEditPage> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
               ),
             ),
-
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 음식 이미지
                     Container(
                       height: 280,
                       width: double.infinity,
@@ -194,10 +306,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                               ),
                             ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // 식사 정보 카드
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -213,16 +322,14 @@ class _FoodEditPageState extends State<FoodEditPage> {
                       ),
                       child: Column(
                         children: [
-                          // 식사 구분
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('식사 구분'),
-
                               DropdownButton<String>(
                                 value: selectedMeal,
                                 isDense: true,
-                                underline: const SizedBox(), // 밑줄 제거
+                                underline: const SizedBox(),
                                 icon: const Icon(Icons.keyboard_arrow_down),
                                 items: ['아침', '점심', '저녁', '야식']
                                     .map(
@@ -240,10 +347,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 12),
-
-                          // 기록 시간
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -258,9 +362,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                                         vertical: 8,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFFF1F3F5,
-                                        ), // ⭐ 옅은 회색
+                                        color: const Color(0xFFF1F3F5),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Row(
@@ -326,9 +428,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     Text(
                       '식단 구성 (${foods.length})',
                       style: const TextStyle(
@@ -336,9 +436,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     Column(
                       children: List.generate(foods.length, (index) {
                         final item = foods[index] as Map<String, dynamic>;
@@ -362,7 +460,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                item['amount']?.toString() ?? '',
+                                _amountLabelFromItem(item),
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,
@@ -409,11 +507,9 @@ class _FoodEditPageState extends State<FoodEditPage> {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
                     ),
-
                     const SizedBox(height: 20),
-
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -457,16 +553,12 @@ class _FoodEditPageState extends State<FoodEditPage> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 12),
-
                           Container(
                             height: 1,
                             color: Colors.white.withOpacity(0.3),
                           ),
-
                           const SizedBox(height: 12),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -480,31 +572,37 @@ class _FoodEditPageState extends State<FoodEditPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () {
-                          print(selectedMeal);
-                          print(selectedDate);
-                          print(selectedTime);
-                        },
+                        onPressed: _isSaving ? null : _saveMealRecord,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF3B82F6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          '저장하기',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                '저장하기',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ],

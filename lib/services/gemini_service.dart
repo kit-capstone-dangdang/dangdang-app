@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../model/food_item.dart';
+import '../model/meal_record.dart';
+
 class GeminiService {
   final GenerativeModel _model;
 
@@ -12,7 +15,12 @@ class GeminiService {
         apiKey: const String.fromEnvironment('GEMINI_API_KEY'),
       );
 
-  Future<Map<String, dynamic>> analyzeFoodImage(XFile image) async {
+  Future<MealRecord> analyzeFoodImage({
+    required XFile image,
+    required String mealType,
+    required DateTime dateTime,
+    String id = '',
+  }) async {
     final imageBytes = await image.readAsBytes();
 
     const prompt = '''
@@ -23,7 +31,8 @@ class GeminiService {
   "foods": [
     {
       "name": "음식명",
-      "amount": "1그릇",
+      "amountLabel": "1그릇",
+      "servingCount": 1.0,
       "carbohydrate": 0,
       "protein": 0,
       "fat": 0,
@@ -35,10 +44,11 @@ class GeminiService {
 
 규칙:
 - 사진 속 음식이 여러 개면 foods에 각각 넣어줘.
+- amountLabel은 "1그릇", "1접시", "1잔", "1.0인분"처럼 사람이 읽기 쉬운 문자열로 작성해줘.
+- servingCount는 숫자만 넣어줘. 예: 0.5, 1.0, 1.5
 - carbohydrate, protein, fat, sugar는 g 기준 숫자만 넣어줘.
-- 음식 양은 기본적으로 1인분 기준으로 추정해줘.
-- 밥류는 1공기, 국물류는 1그릇, 반찬류는 1접시, 음료는 1잔처럼 써줘.
 - aiComment는 당뇨 관리 관점에서 2문장으로 짧게 작성해줘.
+- JSON 외 다른 텍스트는 절대 넣지 마.
 ''';
 
     final content = [
@@ -48,7 +58,7 @@ class GeminiService {
     final response = await _model.generateContent(content);
     final text = response.text;
 
-    if (text == null || text.isEmpty) {
+    if (text == null || text.trim().isEmpty) {
       throw Exception('분석 결과를 가져오지 못했습니다.');
     }
 
@@ -58,42 +68,57 @@ class GeminiService {
         .trim();
 
     final result = jsonDecode(cleanedText) as Map<String, dynamic>;
-    final foods = result['foods'] as List<dynamic>;
+    final foodsJson = (result['foods'] as List<dynamic>? ?? []);
 
-    for (final food in foods) {
+    final foods = foodsJson.map((food) {
       final item = food as Map<String, dynamic>;
 
-      final carbohydrate = _toInt(item['carbohydrate']);
-      final protein = _toInt(item['protein']);
-      final fat = _toInt(item['fat']);
+      final carbohydrate = _toDouble(item['carbohydrate']);
+      final protein = _toDouble(item['protein']);
+      final fat = _toDouble(item['fat']);
+      final sugar = _toDouble(item['sugar']);
 
-      item['calories'] = _calculateCalories(
+      return FoodItem(
+        name: item['name'] ?? '',
+        amountLabel: item['amountLabel'] ?? '',
+        servingCount: _toDouble(item['servingCount'], defaultValue: 1.0),
+        calories: _calculateCalories(
+          carbohydrate: carbohydrate,
+          protein: protein,
+          fat: fat,
+        ),
         carbohydrate: carbohydrate,
         protein: protein,
         fat: fat,
+        sugar: sugar,
       );
-    }
+    }).toList();
 
-    result['totalNutrition'] = _calculateTotalNutrition(foods);
+    final totalNutrition = _calculateTotalNutrition(foods);
 
-    return result;
+    return MealRecord(
+      id: id,
+      dateTime: dateTime,
+      mealType: mealType,
+      foods: foods,
+      aiComment: result['aiComment'] ?? '',
+      totalNutrition: totalNutrition,
+    );
   }
 
-  Map<String, int> _calculateTotalNutrition(List<dynamic> foods) {
-    int calories = 0;
-    int carbohydrate = 0;
-    int protein = 0;
-    int fat = 0;
-    int sugar = 0;
+  Map<String, double> _calculateTotalNutrition(List<FoodItem> foods) {
+    double calories = 0;
+    double carbohydrate = 0;
+    double protein = 0;
+    double fat = 0;
+    double sugar = 0;
 
     for (final food in foods) {
-      final item = food as Map<String, dynamic>;
-
-      calories += _toInt(item['calories']);
-      carbohydrate += _toInt(item['carbohydrate']);
-      protein += _toInt(item['protein']);
-      fat += _toInt(item['fat']);
-      sugar += _toInt(item['sugar']);
+      calories += food.calories;
+      carbohydrate += food.carbohydrate;
+      protein += food.protein;
+      fat += food.fat;
+      sugar += food.sugar;
     }
 
     return {
@@ -105,18 +130,18 @@ class GeminiService {
     };
   }
 
-  int _calculateCalories({
-    required int carbohydrate,
-    required int protein,
-    required int fat,
+  double _calculateCalories({
+    required double carbohydrate,
+    required double protein,
+    required double fat,
   }) {
     return (carbohydrate * 4) + (protein * 4) + (fat * 9);
   }
 
-  int _toInt(dynamic value) {
-    if (value is int) return value;
-    if (value is double) return value.round();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
+  double _toDouble(dynamic value, {double defaultValue = 0.0}) {
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    if (value is String) return double.tryParse(value) ?? defaultValue;
+    return defaultValue;
   }
 }

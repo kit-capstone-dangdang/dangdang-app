@@ -1,4 +1,3 @@
-import 'package:dangdang/data/food_analysis_result_dummy_data.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/common/custom_card.dart';
