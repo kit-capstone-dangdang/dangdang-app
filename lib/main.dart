@@ -22,11 +22,12 @@ class DangDangApp extends StatelessWidget {
       title: '당당하게',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2F69FE))
-            .copyWith(
-              primary: const Color.fromARGB(255, 17, 48, 189),
-              surface: Colors.white,
-            ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2F69FE),
+        ).copyWith(
+          primary: const Color.fromARGB(255, 17, 48, 189),
+          surface: Colors.white,
+        ),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),

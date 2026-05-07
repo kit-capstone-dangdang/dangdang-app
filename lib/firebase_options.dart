@@ -71,4 +71,5 @@ class DefaultFirebaseOptions {
     authDomain: 'dangdang-app.firebaseapp.com',
     storageBucket: 'dangdang-app.firebasestorage.app',
   );
+
 }

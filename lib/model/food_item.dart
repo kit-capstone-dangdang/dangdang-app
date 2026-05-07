@@ -5,6 +5,7 @@ class FoodItem {
   final double carbs;
   final double protein;
   final double fat;
+  final double sugar;
 
   FoodItem({
     required this.name,
@@ -13,6 +14,7 @@ class FoodItem {
     required this.carbs,
     required this.protein,
     required this.fat,
+    required this.sugar
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class FoodItem {
       'carbs': carbs,
       'protein': protein,
       'fat': fat,
+      'sugar': sugar,
     };
   }
 
@@ -34,6 +37,7 @@ class FoodItem {
       carbs: (json['carbs'] ?? 0).toDouble(),
       protein: (json['protein'] ?? 0).toDouble(),
       fat: (json['fat'] ?? 0).toDouble(),
+      sugar: (json['sugar'] ?? 0).toDouble(),
     );
   }
 }
