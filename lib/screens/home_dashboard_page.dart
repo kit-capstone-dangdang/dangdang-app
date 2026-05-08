@@ -6,7 +6,6 @@ import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
 import '../services/gemini_service.dart';
 import '../screens/analysis_result.dart';
-import '../model/meal_record.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -21,8 +20,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   Future<void> _pickImageAndAnalyze({
     required BuildContext context,
     required Future<XFile?> Function() pickImage,
+    bool fromBottomSheet = true,
   }) async {
-    Navigator.pop(context);
+    if (fromBottomSheet) {
+      Navigator.pop(context);
+    }
 
     final XFile? image = await pickImage();
 
@@ -47,13 +49,23 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         _isLoading = false;
       });
 
-      Navigator.push(
+      final action = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) =>
               AnalysisResult(image: image, result: mealRecord.toJson()),
         ),
       );
+
+      if (action == 'retake' && mounted) {
+        Future.microtask(() {
+          _pickImageAndAnalyze(
+            context: context,
+            pickImage: pickImage,
+            fromBottomSheet: false,
+          );
+        });
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -86,7 +98,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         return Container(
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(30),
               topRight: Radius.circular(30),
             ),

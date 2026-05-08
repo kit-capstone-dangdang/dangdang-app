@@ -1,17 +1,22 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../model/food_item.dart';
-import '../model/meal_record.dart';
+import '../models/food_item.dart';
+import '../models/meal_record.dart';
 import '../repositories/firebase_meal_repository.dart';
+import '../services/meal_image_storage_service.dart';
+import '../services/gemini_service.dart';
+import '../utils/nutrition_utils.dart';
+import '../widgets/food_edit/food_item_card.dart';
+import 'package:dangdang/features/image_input/image_picker_service.dart';
+import '../widgets/common/nutrition_summary_box.dart';
 
 class FoodEditPage extends StatefulWidget {
   final XFile? image;
-  final Map<String, dynamic> result;
+  final Map<String, dynamic>? result;
+  final MealRecord? originalRecord;
 
-  const FoodEditPage({super.key, required this.image, required this.result});
+  const FoodEditPage({super.key, this.image, this.result, this.originalRecord});
 
   @override
   State<FoodEditPage> createState() => _FoodEditPageState();
@@ -19,6 +24,10 @@ class FoodEditPage extends StatefulWidget {
 
 class _FoodEditPageState extends State<FoodEditPage> {
   final FirebaseMealRepository _mealRepository = FirebaseMealRepository();
+  final MealImageStorageService _imageStorageService =
+      MealImageStorageService();
+  final ImagePickerService _imagePickerService = ImagePickerService();
+  final GeminiService _geminiService = GeminiService();
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
@@ -26,13 +35,68 @@ class _FoodEditPageState extends State<FoodEditPage> {
   List<double> quantities = [];
   bool _isSaving = false;
 
-  List<dynamic> get foods => widget.result['foods'] as List<dynamic>? ?? [];
+  List<FoodItem> _baseFoods = [];
+  late List<String> _initialNames;
+  String? _networkImageUrl;
+  XFile? _newImage;
 
-  double _toDouble(dynamic value, {double defaultValue = 0.0}) {
-    if (value is int) return value.toDouble();
-    if (value is double) return value;
-    if (value is String) return double.tryParse(value) ?? defaultValue;
-    return defaultValue;
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.originalRecord != null) {
+      selectedDate = widget.originalRecord!.dateTime;
+      selectedTime = TimeOfDay.fromDateTime(widget.originalRecord!.dateTime);
+      selectedMeal = widget.originalRecord!.mealType;
+      _networkImageUrl = widget.originalRecord!.imageUrl;
+
+      _baseFoods = widget.originalRecord!.foods.map((food) {
+        return food.scaled(1 / food.servingCount);
+      }).toList();
+
+      quantities = widget.originalRecord!.foods
+          .map((e) => e.servingCount)
+          .toList();
+    } else {
+      final rawFoods = widget.result?['foods'] as List<dynamic>? ?? [];
+
+      _baseFoods = rawFoods.map((item) {
+        final mapItem = item as Map<String, dynamic>;
+
+        double analyzeServingCount = parseDouble(
+          mapItem['servingCount'],
+          defaultValue: 1.0,
+        );
+        if (analyzeServingCount <= 0) analyzeServingCount = 1.0;
+
+        final carbohydrate =
+            parseDouble(mapItem['carbohydrate']) / analyzeServingCount;
+        final protein = parseDouble(mapItem['protein']) / analyzeServingCount;
+        final fat = parseDouble(mapItem['fat']) / analyzeServingCount;
+        final sugar = parseDouble(mapItem['sugar']) / analyzeServingCount;
+
+        return FoodItem(
+          name: mapItem['name']?.toString() ?? '',
+          amountLabel: _amountLabelFromItem(mapItem),
+          servingCount: 1.0,
+          calories: calculateCalories(
+            carbohydrate: carbohydrate,
+            protein: protein,
+            fat: fat,
+          ),
+          carbohydrate: carbohydrate,
+          protein: protein,
+          fat: fat,
+          sugar: sugar,
+        );
+      }).toList();
+
+      quantities = rawFoods
+          .map((item) => parseDouble(item['servingCount'], defaultValue: 1.0))
+          .toList();
+    }
+
+    _initialNames = _baseFoods.map((f) => f.name).toList();
   }
 
   String _amountLabelFromItem(Map<String, dynamic> item) {
@@ -40,98 +104,89 @@ class _FoodEditPageState extends State<FoodEditPage> {
     if (amountLabel != null && amountLabel.isNotEmpty) {
       return amountLabel;
     }
-
     final amount = item['amount']?.toString();
     if (amount != null && amount.isNotEmpty) {
       return amount;
     }
-
     return '1인분';
   }
 
-  double _calculateCalories({
-    required double carbohydrate,
-    required double protein,
-    required double fat,
-  }) {
-    return (carbohydrate * 4) + (protein * 4) + (fat * 9);
-  }
-
   List<FoodItem> _buildFoodItems() {
-    return List.generate(foods.length, (index) {
-      final item = foods[index] as Map<String, dynamic>;
-      final quantity = quantities[index];
-
-      final baseCarbohydrate = _toDouble(item['carbohydrate']);
-      final baseProtein = _toDouble(item['protein']);
-      final baseFat = _toDouble(item['fat']);
-      final baseSugar = _toDouble(item['sugar']);
-
-      final carbohydrate = baseCarbohydrate * quantity;
-      final protein = baseProtein * quantity;
-      final fat = baseFat * quantity;
-      final sugar = baseSugar * quantity;
-      final calories = _calculateCalories(
-        carbohydrate: carbohydrate,
-        protein: protein,
-        fat: fat,
-      );
-
-      return FoodItem(
-        name: item['name']?.toString() ?? '',
-        amountLabel: _amountLabelFromItem(item),
-        servingCount: quantity,
-        calories: calories,
-        carbohydrate: carbohydrate,
-        protein: protein,
-        fat: fat,
-        sugar: sugar,
-      );
+    return List.generate(_baseFoods.length, (index) {
+      return _baseFoods[index].scaled(quantities[index]);
     });
   }
 
-  Map<String, double> _buildTotalNutrition(List<FoodItem> foodItems) {
-    double calories = 0;
-    double carbohydrate = 0;
-    double protein = 0;
-    double fat = 0;
-    double sugar = 0;
-
-    for (final food in foodItems) {
-      calories += food.calories;
-      carbohydrate += food.carbohydrate;
-      protein += food.protein;
-      fat += food.fat;
-      sugar += food.sugar;
-    }
-
-    return {
-      'calories': calories,
-      'carbohydrate': carbohydrate,
-      'protein': protein,
-      'fat': fat,
-      'sugar': sugar,
-    };
+  Map<String, double> get _currentTotalNutrition {
+    return calculateTotalNutrition(_buildFoodItems());
   }
 
   DateTime _buildSelectedDateTime() {
     final now = DateTime.now();
     final date = selectedDate ?? now;
     final time = selectedTime ?? TimeOfDay.now();
-
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
-  MealRecord _buildMealRecord() {
+  MealRecord _buildMealRecord({required String imageUrl}) {
     final foodItems = _buildFoodItems();
-
     return MealRecord(
-      id: '',
+      id: widget.originalRecord?.id ?? '',
       dateTime: _buildSelectedDateTime(),
       mealType: selectedMeal,
       foods: foodItems,
-      aiComment: widget.result['aiComment']?.toString() ?? '',
-      totalNutrition: _buildTotalNutrition(foodItems),
+      imageUrl: imageUrl,
+      aiComment:
+          widget.originalRecord?.aiComment ??
+          widget.result?['aiComment']?.toString() ??
+          '',
+      totalNutrition: MealRecord.totalNutritionFromFoods(foodItems),
+    );
+  }
+
+  Future<void> _showImagePicker(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '사진 교체하기',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('카메라로 촬영'),
+              onTap: () async {
+                Navigator.pop(context);
+                final img = await _imagePickerService.pickFromCamera();
+                if (img != null) setState(() => _newImage = img);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('갤러리에서 선택'),
+              onTap: () async {
+                Navigator.pop(context);
+                final img = await _imagePickerService.pickFromGallery();
+                if (img != null) setState(() => _newImage = img);
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
     );
   }
 
@@ -143,19 +198,57 @@ class _FoodEditPageState extends State<FoodEditPage> {
     });
 
     try {
-      final mealRecord = _buildMealRecord();
-      await _mealRepository.createMeal(mealRecord);
+      List<int> changedIndices = [];
+      List<String> changedNames = [];
+
+      for (int i = 0; i < _baseFoods.length; i++) {
+        if (_baseFoods[i].name != _initialNames[i]) {
+          changedIndices.add(i);
+          changedNames.add(_baseFoods[i].name);
+        }
+      }
+
+      if (changedNames.isNotEmpty) {
+        final updatedItems = await _geminiService.refineMultipleFoodsInfo(
+          changedNames,
+        );
+        for (int i = 0; i < changedIndices.length; i++) {
+          _baseFoods[changedIndices[i]] = updatedItems[i];
+        }
+      }
+
+      String imageUrl = _networkImageUrl ?? '';
+      final imageToUpload = _newImage ?? widget.image;
+
+      if (imageToUpload != null) {
+        imageUrl = await _imageStorageService.uploadMealImage(imageToUpload);
+      }
+
+      final mealRecord = _buildMealRecord(imageUrl: imageUrl);
+
+      if (widget.originalRecord != null) {
+        await _mealRepository.updateMeal(
+          mealRecord,
+          oldImageUrl: widget.originalRecord!.imageUrl,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('식단 기록이 수정되었습니다.')));
+        }
+      } else {
+        await _mealRepository.createMeal(mealRecord);
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('식단 기록이 저장되었습니다.')));
+        }
+      }
 
       if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('식단 기록이 저장되었습니다.')));
-
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('저장 중 오류가 발생했습니다: $e'),
@@ -163,38 +256,20 @@ class _FoodEditPageState extends State<FoodEditPage> {
         ),
       );
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _isSaving = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
-  double get totalCalories {
-    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
-    return totalNutrition['calories'] ?? 0;
-  }
-
-  int get totalCarbohydrate {
-    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
-    return (totalNutrition['carbohydrate'] ?? 0).round();
-  }
-
-  int get totalProtein {
-    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
-    return (totalNutrition['protein'] ?? 0).round();
-  }
-
-  int get totalFat {
-    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
-    return (totalNutrition['fat'] ?? 0).round();
-  }
-
-  int get totalSugar {
-    final totalNutrition = _buildTotalNutrition(_buildFoodItems());
-    return (totalNutrition['sugar'] ?? 0).round();
-  }
+  double get totalCalories => _currentTotalNutrition['calories'] ?? 0;
+  int get totalCarbohydrate =>
+      (_currentTotalNutrition['carbohydrate'] ?? 0).round();
+  int get totalProtein => (_currentTotalNutrition['protein'] ?? 0).round();
+  int get totalFat => (_currentTotalNutrition['fat'] ?? 0).round();
+  int get totalSugar => (_currentTotalNutrition['sugar'] ?? 0).round();
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -203,12 +278,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-
-    if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
+    if (picked != null) setState(() => selectedDate = picked);
   }
 
   Future<void> _pickTime() async {
@@ -216,45 +286,13 @@ class _FoodEditPageState extends State<FoodEditPage> {
       context: context,
       initialTime: selectedTime ?? TimeOfDay.now(),
     );
-
-    if (picked != null) {
-      setState(() {
-        selectedTime = picked;
-      });
-    }
-  }
-
-  Widget _nutrientItem(String title, String value) {
-    return Column(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    quantities = List.generate(foods.length, (index) {
-      final item = foods[index] as Map<String, dynamic>;
-      return _toDouble(item['servingCount'], defaultValue: 1.0);
-    });
+    if (picked != null) setState(() => selectedTime = picked);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEditMode = widget.originalRecord != null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       body: SafeArea(
@@ -270,9 +308,12 @@ class _FoodEditPageState extends State<FoodEditPage> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
-              title: const Text(
-                '식단 정보 확인',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              title: Text(
+                isEditMode ? '식단 정보 수정' : '식단 정보 확인',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             SliverToBoxAdapter(
@@ -281,30 +322,74 @@ class _FoodEditPageState extends State<FoodEditPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 280,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: widget.image == null
-                          ? const Center(
-                              child: Icon(
-                                Icons.fastfood,
-                                size: 64,
-                                color: Colors.orange,
-                              ),
-                            )
-                          : ClipRRect(
+                    GestureDetector(
+                      onTap: () => _showImagePicker(context),
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 280,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
                               borderRadius: BorderRadius.circular(32),
-                              child: Image.file(
-                                File(widget.image!.path),
-                                width: double.infinity,
-                                height: 280,
-                                fit: BoxFit.cover,
+                            ),
+                            child: _newImage != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(32),
+                                    child: Image.file(
+                                      File(_newImage!.path),
+                                      width: double.infinity,
+                                      height: 280,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : widget.image != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(32),
+                                    child: Image.file(
+                                      File(widget.image!.path),
+                                      width: double.infinity,
+                                      height: 280,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : (_networkImageUrl != null &&
+                                      _networkImageUrl!.isNotEmpty)
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(32),
+                                    child: Image.network(
+                                      _networkImageUrl!,
+                                      width: double.infinity,
+                                      height: 280,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Icon(
+                                      Icons.fastfood,
+                                      size: 64,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                          ),
+                          Positioned(
+                            right: 15,
+                            bottom: 15,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 20,
                               ),
                             ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
                     Container(
@@ -340,9 +425,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                                     )
                                     .toList(),
                                 onChanged: (value) {
-                                  setState(() {
-                                    selectedMeal = value!;
-                                  });
+                                  setState(() => selectedMeal = value!);
                                 },
                               ),
                             ],
@@ -430,7 +513,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      '식단 구성 (${foods.length})',
+                      '식단 구성 (${_baseFoods.length})',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -438,138 +521,39 @@ class _FoodEditPageState extends State<FoodEditPage> {
                     ),
                     const SizedBox(height: 12),
                     Column(
-                      children: List.generate(foods.length, (index) {
-                        final item = foods[index] as Map<String, dynamic>;
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item['name']?.toString() ?? '음식명 없음',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _amountLabelFromItem(item),
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  IconButton(
-                                    onPressed: quantities[index] > 0.1
-                                        ? () {
-                                            setState(() {
-                                              quantities[index] = double.parse(
-                                                (quantities[index] - 0.1)
-                                                    .toStringAsFixed(1),
-                                              );
-                                            });
-                                          }
-                                        : null,
-                                    icon: const Icon(Icons.remove),
-                                  ),
-                                  Text(
-                                    '${quantities[index].toStringAsFixed(1)}인분',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        quantities[index] = double.parse(
-                                          (quantities[index] + 0.1)
-                                              .toStringAsFixed(1),
-                                        );
-                                      });
-                                    },
-                                    icon: const Icon(Icons.add),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                      children: List.generate(_baseFoods.length, (index) {
+                        return FoodItemCard(
+                          item: _baseFoods[index],
+                          quantity: quantities[index],
+                          onChanged: (value) {
+                            setState(() {
+                              quantities[index] = value;
+                            });
+                          },
+                          onNameChanged: (newName) {
+                            setState(() {
+                              _baseFoods[index] = FoodItem(
+                                name: newName,
+                                amountLabel: _baseFoods[index].amountLabel,
+                                servingCount: _baseFoods[index].servingCount,
+                                calories: _baseFoods[index].calories,
+                                carbohydrate: _baseFoods[index].carbohydrate,
+                                protein: _baseFoods[index].protein,
+                                fat: _baseFoods[index].fat,
+                                sugar: _baseFoods[index].sugar,
+                              );
+                            });
+                          },
                         );
                       }),
                     ),
                     const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                '총 영양 정보 합계',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    totalCalories.toStringAsFixed(0),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    'kcal',
-                                    style: TextStyle(color: Colors.white70),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            height: 1,
-                            color: Colors.white.withOpacity(0.3),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _nutrientItem('탄수', '${totalCarbohydrate}g'),
-                              _nutrientItem('단백', '${totalProtein}g'),
-                              _nutrientItem('지방', '${totalFat}g'),
-                              _nutrientItem('당류', '${totalSugar}g'),
-                            ],
-                          ),
-                        ],
-                      ),
+                    NutritionSummaryBox(
+                      calories: totalCalories.round(),
+                      carbohydrate: totalCarbohydrate,
+                      protein: totalProtein,
+                      fat: totalFat,
+                      sugar: totalSugar,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
@@ -595,9 +579,9 @@ class _FoodEditPageState extends State<FoodEditPage> {
                                   ),
                                 ),
                               )
-                            : const Text(
-                                '저장하기',
-                                style: TextStyle(
+                            : Text(
+                                isEditMode ? '수정하기' : '저장하기',
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,

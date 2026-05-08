@@ -8,6 +8,7 @@ class MealRecordCard extends StatelessWidget {
   final int calories;
   final String foodName;
   final int itemCount;
+  final String imageUrl;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -19,6 +20,7 @@ class MealRecordCard extends StatelessWidget {
     required this.calories,
     required this.foodName,
     required this.itemCount,
+    required this.imageUrl,
     this.onTap,
     this.onEdit,
     this.onDelete,
@@ -32,16 +34,37 @@ class MealRecordCard extends StatelessWidget {
     return CustomCard(
       onTap: onTap,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadiusGeometry.circular(16),
-            child: Container(
-              width: 75,
-              height: 75,
-              color: Colors.grey.shade300,
-            ),
+            borderRadius: BorderRadius.circular(16),
+            child: imageUrl.isEmpty
+                ? Container(
+                    width: 75,
+                    height: 75,
+                    color: Colors.grey.shade300,
+                    child: Icon(Icons.fastfood, color: Colors.grey.shade500),
+                  )
+                : Image.network(
+                    imageUrl,
+                    width: 75,
+                    height: 75,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 75,
+                        height: 75,
+                        color: Colors.grey.shade300,
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.grey.shade500,
+                        ),
+                      );
+                    },
+                  ),
           ),
-          const SizedBox(width: 15),
+
+          const SizedBox(width: 12),
 
           Expanded(
             child: Column(
@@ -66,8 +89,10 @@ class MealRecordCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     const SizedBox(width: 8),
-                    Flexible(
+
+                    Expanded(
                       child: Text(
                         time,
                         style: textTheme.labelSmall?.copyWith(
@@ -77,22 +102,10 @@ class MealRecordCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Spacer(),
-                    Flexible(
-                      child: Text(
-                        '$calories kcal',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
                   ],
                 ),
 
-                const SizedBox(height: 5),
+                const SizedBox(height: 6),
 
                 Text(
                   foodName,
@@ -113,25 +126,46 @@ class MealRecordCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+
+          const SizedBox(width: 10),
 
           SizedBox(
-            width: 110,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            width: 78,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                CustomIcon(
-                  icon: Icons.edit_outlined,
-                  size: 24,
-                  iconColor: Colors.grey.shade400,
-                  onPressed: onEdit,
+                Text(
+                  '$calories kcal',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 10),
-                CustomIcon(
-                  icon: Icons.delete_outlined,
-                  size: 24,
-                  iconColor: Colors.grey.shade400,
-                  onPressed: onDelete,
+
+                const SizedBox(height: 35),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomIcon(
+                      icon: Icons.edit_outlined,
+                      size: 24,
+                      iconColor: Colors.grey.shade400,
+                      onPressed: onEdit,
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    CustomIcon(
+                      icon: Icons.delete_outlined,
+                      size: 24,
+                      iconColor: Colors.grey.shade400,
+                      onPressed: onDelete,
+                    ),
+                  ],
                 ),
               ],
             ),
