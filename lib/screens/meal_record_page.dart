@@ -258,130 +258,151 @@ class _MealRecordPageState extends State<MealRecordPage> {
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              DateHeader(
-                                date: _formatDate(records.first.dateTime),
-                              ),
-                              const SizedBox(height: 16),
-                              ...List.generate(records.length, (index) {
-                                final record = records[index];
+                            children: List.generate(records.length, (index) {
+                              final record = records[index];
+                              bool showDateHeader = false;
 
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 25),
-                                  child: MealRecordCard(
-                                    mealType: record.mealType,
-                                    time: _formatTime(record.dateTime),
-                                    calories: _totalCalories(record),
-                                    foodName: _foodNames(records, index),
-                                    itemCount: record.foods.length,
-                                    imageUrl: record.imageUrl,
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              MealAnalysisResultPage(
-                                                record: record,
-                                              ),
-                                        ),
-                                      );
-                                    },
-                                    onEdit: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => FoodEditPage(
-                                            originalRecord: record,
+                              if (index == 0) {
+                                showDateHeader = true;
+                              } else {
+                                final prevDate = _formatDate(
+                                  records[index - 1].dateTime,
+                                );
+                                final currDate = _formatDate(record.dateTime);
+                                if (prevDate != currDate) {
+                                  showDateHeader = true;
+                                }
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (showDateHeader) ...[
+                                    if (index > 0) const SizedBox(height: 32),
+                                    DateHeader(
+                                      date: _formatDate(record.dateTime),
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 25),
+                                    child: MealRecordCard(
+                                      mealType: record.mealType,
+                                      time: _formatTime(record.dateTime),
+                                      calories: _totalCalories(record),
+                                      foodName: _foodNames(records, index),
+                                      itemCount: record.foods.length,
+                                      imageUrl: record.imageUrl,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                MealAnalysisResultPage(
+                                                  record: record,
+                                                ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                    onDelete: () async {
-                                      final bool? confirmDelete =
-                                          await showDialog<bool>(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                backgroundColor:
-                                                    colorScheme.surface,
-                                                title: Text(
-                                                  '식단 삭제',
-                                                  style: textTheme.titleLarge,
-                                                ),
-                                                content: const Text(
-                                                  '이 식단 기록을 정말 삭제하시겠습니까?',
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                          context,
-                                                          false,
+                                        );
+                                      },
+                                      onEdit: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => FoodEditPage(
+                                              originalRecord: record,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      onDelete: () async {
+                                        final bool? confirmDelete =
+                                            await showDialog<bool>(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  backgroundColor:
+                                                      colorScheme.surface,
+                                                  title: Text(
+                                                    '식단 삭제',
+                                                    style: textTheme.titleLarge,
+                                                  ),
+                                                  content: const Text(
+                                                    '이 식단 기록을 정말 삭제하시겠습니까?',
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            false,
+                                                          ),
+                                                      child: Text(
+                                                        '취소',
+                                                        style: TextStyle(
+                                                          color: colorScheme
+                                                              .onSurfaceVariant,
                                                         ),
-                                                    child: Text(
-                                                      '취소',
-                                                      style: TextStyle(
-                                                        color: colorScheme
-                                                            .onSurfaceVariant,
                                                       ),
                                                     ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                          context,
-                                                          true,
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            true,
+                                                          ),
+                                                      child: const Text(
+                                                        '삭제',
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
-                                                    child: const Text(
-                                                      '삭제',
-                                                      style: TextStyle(
-                                                        color: Colors.red,
-                                                        fontWeight:
-                                                            FontWeight.bold,
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                      if (confirmDelete == true &&
-                                          context.mounted) {
-                                        try {
-                                          await repository.deleteMeal(
-                                            record.id,
-                                            imageUrl: record.imageUrl,
-                                          );
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                        if (confirmDelete == true &&
+                                            context.mounted) {
+                                          try {
+                                            await repository.deleteMeal(
+                                              record.id,
+                                              imageUrl: record.imageUrl,
+                                            );
 
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              const SnackBar(
-                                                content: Text('성공적으로 삭제되었습니다.'),
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  '삭제 중 오류가 발생했습니다.',
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    '성공적으로 삭제되었습니다.',
+                                                  ),
                                                 ),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    '삭제 중 오류가 발생했습니다.',
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
                                           }
                                         }
-                                      }
-                                    },
+                                      },
+                                    ),
                                   ),
-                                );
-                              }),
-                            ],
+                                ],
+                              );
+                            }),
                           ),
                         ),
                       );

@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/food_item.dart';
@@ -109,6 +110,24 @@ class _FoodEditPageState extends State<FoodEditPage> {
       return amount;
     }
     return '1인분';
+  }
+
+  Widget _buildPickedImage(XFile image) {
+    return FutureBuilder<Uint8List>(
+      future: image.readAsBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return Image.memory(
+          snapshot.data!,
+          width: double.infinity,
+          height: 280,
+          fit: BoxFit.cover,
+        );
+      },
+    );
   }
 
   List<FoodItem> _buildFoodItems() {
@@ -336,22 +355,12 @@ class _FoodEditPageState extends State<FoodEditPage> {
                             child: _newImage != null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(32),
-                                    child: Image.file(
-                                      File(_newImage!.path),
-                                      width: double.infinity,
-                                      height: 280,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: _buildPickedImage(_newImage!),
                                   )
                                 : widget.image != null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(32),
-                                    child: Image.file(
-                                      File(widget.image!.path),
-                                      width: double.infinity,
-                                      height: 280,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: _buildPickedImage(widget.image!),
                                   )
                                 : (_networkImageUrl != null &&
                                       _networkImageUrl!.isNotEmpty)

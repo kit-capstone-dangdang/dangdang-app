@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -11,9 +9,13 @@ class MealImageStorageService {
 
     final ref = _storage.ref().child('meal_images/$fileName');
 
-    final metadata = SettableMetadata(contentType: 'image/jpeg');
+    final metadata = SettableMetadata(
+      contentType: image.mimeType ?? 'image/jpeg',
+    );
 
-    await ref.putFile(File(image.path), metadata);
+    final bytes = await image.readAsBytes();
+
+    await ref.putData(bytes, metadata);
 
     return await ref.getDownloadURL();
   }
