@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import '../models/meal_record.dart';
 import '../widgets/common/custom_card.dart';
 import '../widgets/common/custom_icon.dart';
-import '../widgets/meal_analysis_result/nutrition_summary_card.dart';
 import '../widgets/meal_analysis_result/food_detail_item_card.dart';
-import 'dart:io';
+import '../repositories/firebase_meal_repository.dart';
+import 'food_edit_page.dart';
+import '../widgets/common/nutrition_summary_box.dart';
 
 class MealAnalysisResultPage extends StatelessWidget {
-  final XFile image;
-  final Map<String, dynamic> analysisResult;
+  final MealRecord record;
 
-  const MealAnalysisResultPage({
-    super.key,
-    required this.image,
-    required this.analysisResult,
-  });
+  const MealAnalysisResultPage({super.key, required this.record});
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final totalNutrition =
-        analysisResult['totalNutrition'] as Map<String, dynamic>;
-    final foods = analysisResult['foods'] as List<dynamic>;
-    final aiComment = analysisResult['aiComment'] ?? '';
+    final totalNutrition = record.totalNutrition;
+    final foods = record.foods;
+    final aiComment = record.aiComment;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -58,14 +53,80 @@ class MealAnalysisResultPage extends StatelessWidget {
                   icon: Icons.edit_outlined,
                   backgroundColor: Colors.grey.shade100,
                   iconColor: colorScheme.onSurface,
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FoodEditPage(originalRecord: record),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 10),
                 CustomIcon(
                   icon: Icons.delete_outlined,
                   backgroundColor: Colors.grey.shade100,
                   iconColor: colorScheme.error,
-                  onPressed: () {},
+                  onPressed: () async {
+                    final bool? confirmDelete = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          backgroundColor: colorScheme.surface,
+                          title: Text('식단 삭제', style: textTheme.titleLarge),
+                          content: const Text('이 식단 기록을 정말 삭제하시겠습니까?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: Text(
+                                '취소',
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text(
+                                '삭제',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmDelete == true && context.mounted) {
+                      try {
+                        final repository = FirebaseMealRepository();
+                        await repository.deleteMeal(
+                          record.id,
+                          imageUrl: record.imageUrl,
+                        );
+
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('성공적으로 삭제되었습니다.')),
+                          );
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('삭제 중 오류가 발생했습니다.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  },
                 ),
                 const SizedBox(width: 24),
               ],
@@ -76,74 +137,42 @@ class MealAnalysisResultPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. 음식 사진 영역
                     CustomCard(
                       padding: EdgeInsets.zero,
                       borderRadius: 38,
                       backgroundColor: Colors.grey.shade200,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(38),
-                        child: Image.file(
-                          File(image.path),
-                          height: 300,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                        child: record.imageUrl.isEmpty
+                            ? SizedBox(
+                                height: 300,
+                                width: double.infinity,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.fastfood,
+                                    size: 64,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              )
+                            : Image.network(
+                                record.imageUrl,
+                                height: 300,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     ),
                     const SizedBox(height: 22),
-
-                    // 2. 영양 요약 카드
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '총 영양 정보 합계',
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                '${totalNutrition['calories']} kcal',
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 22),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              NutritionSummaryCard(
-                                label: '탄수',
-                                value: '${totalNutrition['carbohydrate']}g',
-                              ),
-                              NutritionSummaryCard(
-                                label: '단백',
-                                value: '${totalNutrition['protein']}g',
-                              ),
-                              NutritionSummaryCard(
-                                label: '지방',
-                                value: '${totalNutrition['fat']}g',
-                              ),
-                              NutritionSummaryCard(
-                                label: '당류',
-                                value: '${totalNutrition['sugar']}g',
-                                isHighlight: true,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    NutritionSummaryBox(
+                      calories: (totalNutrition['calories'] ?? 0).round(),
+                      carbohydrate: (totalNutrition['carbohydrate'] ?? 0)
+                          .round(),
+                      protein: (totalNutrition['protein'] ?? 0).round(),
+                      fat: (totalNutrition['fat'] ?? 0).round(),
+                      sugar: (totalNutrition['sugar'] ?? 0).round(),
                     ),
                     const SizedBox(height: 22),
-
-                    // 상세 품목 타이틀
                     Padding(
                       padding: const EdgeInsets.only(left: 5),
                       child: Text(
@@ -154,16 +183,10 @@ class MealAnalysisResultPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // 3. 음식 아이템 리스트 (CustomCard 적용)
                     ...foods.map((food) {
-                      return FoodDetailItemCard(
-                        item: food as Map<String, dynamic>,
-                      );
+                      return FoodDetailItemCard(item: food.toJson());
                     }),
                     const SizedBox(height: 10),
-
-                    // 4. AI 분석 카드 (CustomCard 배경색 변경 적용)
                     CustomCard(
                       backgroundColor: Colors.green.shade50,
                       child: Column(
@@ -188,12 +211,10 @@ class MealAnalysisResultPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 22),
-
-                    // 5. 목록으로 돌아가기 버튼 (CustomCard를 버튼처럼 사용)
                     CustomCard(
                       onTap: () => Navigator.pop(context),
                       backgroundColor: colorScheme.primary,
-                      showShadow: false, // 버튼은 그림자 제외 (선택사항)
+                      showShadow: false,
                       child: Center(
                         child: Text(
                           '목록으로 돌아가기',

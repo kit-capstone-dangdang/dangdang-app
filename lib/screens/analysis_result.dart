@@ -28,7 +28,7 @@ class AnalysisResult extends StatelessWidget {
               surfaceTintColor: Colors.white,
               toolbarHeight: 70,
               leading: IconButton(
-                onPressed: () {},
+                onPressed: () => Navigator.pop(context),
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   color: Colors.black,
@@ -50,7 +50,6 @@ class AnalysisResult extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 음식 사진 영역
                     CustomCard(
                       padding: EdgeInsets.zero,
                       borderRadius: 38,
@@ -66,8 +65,6 @@ class AnalysisResult extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 22),
-
-                    // 인식된 음식 타이틀
                     Text(
                       '인식된 음식 (${foods.length})',
                       style: const TextStyle(
@@ -76,17 +73,12 @@ class AnalysisResult extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // 음식 아이템 리스트
                     ...foods.map((food) {
                       return FoodDetailItemCard(
                         item: food as Map<String, dynamic>,
                       );
                     }),
-
                     const SizedBox(height: 10),
-
-                    // 상세 수정 및 저장
                     CustomCard(
                       backgroundColor: const Color(0xFF2F69FE),
                       showShadow: false,
@@ -110,14 +102,11 @@ class AnalysisResult extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
-                    // 다시 촬영하기
                     CustomCard(
                       showShadow: false,
                       border: Border.all(color: Colors.grey.shade300),
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => Navigator.pop(context, 'retake'),
                       child: const Center(
                         child: Text(
                           '다시 촬영하기',

@@ -50,6 +50,19 @@ class FoodItem {
     );
   }
 
+  FoodItem scaled(double quantity) {
+    return FoodItem(
+      name: name,
+      amountLabel: amountLabel,
+      servingCount: quantity,
+      calories: calories * quantity,
+      carbohydrate: carbohydrate * quantity,
+      protein: protein * quantity,
+      fat: fat * quantity,
+      sugar: sugar * quantity,
+    );
+  }
+
   static double _toDouble(dynamic value, {double defaultValue = 0.0}) {
     if (value is int) return value.toDouble();
     if (value is double) return value;

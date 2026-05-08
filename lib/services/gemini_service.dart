@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../model/food_item.dart';
-import '../model/meal_record.dart';
+import '../models/food_item.dart';
+import '../models/meal_record.dart';
+import '../utils/nutrition_utils.dart';
 
 class GeminiService {
   final GenerativeModel _model;
@@ -45,7 +44,7 @@ class GeminiService {
 규칙:
 - 사진 속 음식이 여러 개면 foods에 각각 넣어줘.
 - amountLabel은 "1그릇", "1접시", "1잔", "1.0인분"처럼 사람이 읽기 쉬운 문자열로 작성해줘.
-- servingCount는 숫자만 넣어줘. 예: 0.5, 1.0, 1.5
+- servingCount는 숫자만 넣어줘.
 - carbohydrate, protein, fat, sugar는 g 기준 숫자만 넣어줘.
 - aiComment는 당뇨 관리 관점에서 2문장으로 짧게 작성해줘.
 - JSON 외 다른 텍스트는 절대 넣지 마.
@@ -73,16 +72,16 @@ class GeminiService {
     final foods = foodsJson.map((food) {
       final item = food as Map<String, dynamic>;
 
-      final carbohydrate = _toDouble(item['carbohydrate']);
-      final protein = _toDouble(item['protein']);
-      final fat = _toDouble(item['fat']);
-      final sugar = _toDouble(item['sugar']);
+      final carbohydrate = parseDouble(item['carbohydrate']);
+      final protein = parseDouble(item['protein']);
+      final fat = parseDouble(item['fat']);
+      final sugar = parseDouble(item['sugar']);
 
       return FoodItem(
         name: item['name'] ?? '',
         amountLabel: item['amountLabel'] ?? '',
-        servingCount: _toDouble(item['servingCount'], defaultValue: 1.0),
-        calories: _calculateCalories(
+        servingCount: parseDouble(item['servingCount'], defaultValue: 1.0),
+        calories: calculateCalories(
           carbohydrate: carbohydrate,
           protein: protein,
           fat: fat,
@@ -94,54 +93,78 @@ class GeminiService {
       );
     }).toList();
 
-    final totalNutrition = _calculateTotalNutrition(foods);
+    final totalNutrition = MealRecord.totalNutritionFromFoods(foods);
 
     return MealRecord(
       id: id,
       dateTime: dateTime,
       mealType: mealType,
       foods: foods,
+      imageUrl: '',
       aiComment: result['aiComment'] ?? '',
       totalNutrition: totalNutrition,
     );
   }
 
-  Map<String, double> _calculateTotalNutrition(List<FoodItem> foods) {
-    double calories = 0;
-    double carbohydrate = 0;
-    double protein = 0;
-    double fat = 0;
-    double sugar = 0;
+  Future<List<FoodItem>> refineMultipleFoodsInfo(List<String> foodNames) async {
+    if (foodNames.isEmpty) return [];
 
-    for (final food in foods) {
-      calories += food.calories;
-      carbohydrate += food.carbohydrate;
-      protein += food.protein;
-      fat += food.fat;
-      sugar += food.sugar;
-    }
+    final namesText = foodNames.join(', ');
+    const prompt = '''
+제공된 음식 리스트의 각 항목에 대한 영양 정보를 JSON 배열로 반환해줘. 설명이나 코드블록 없이 JSON만 반환해.
 
-    return {
-      'calories': calories,
-      'carbohydrate': carbohydrate,
-      'protein': protein,
-      'fat': fat,
-      'sugar': sugar,
-    };
+형식:
+[
+  {
+    "name": "입력받은 음식명",
+    "amountLabel": "1그릇",
+    "servingCount": 1.0,
+    "carbohydrate": 0,
+    "protein": 0,
+    "fat": 0,
+    "sugar": 0
   }
+]
 
-  double _calculateCalories({
-    required double carbohydrate,
-    required double protein,
-    required double fat,
-  }) {
-    return (carbohydrate * 4) + (protein * 4) + (fat * 9);
-  }
+규칙:
+- 입력받은 음식 리스트의 순서를 반드시 유지해줘.
+- servingCount는 1.0으로 고정해줘.
+- carbohydrate, protein, fat, sugar는 g 기준 숫자만 넣어줘.
+''';
 
-  double _toDouble(dynamic value, {double defaultValue = 0.0}) {
-    if (value is int) return value.toDouble();
-    if (value is double) return value;
-    if (value is String) return double.tryParse(value) ?? defaultValue;
-    return defaultValue;
+    final content = [Content.text('음식 리스트: $namesText\n\n$prompt')];
+    final response = await _model.generateContent(content);
+    final text = response.text;
+
+    if (text == null || text.trim().isEmpty) throw Exception('분석 실패');
+
+    final cleanedText = text
+        .replaceAll('```json', '')
+        .replaceAll('```', '')
+        .trim();
+    final List<dynamic> decoded = jsonDecode(cleanedText);
+
+    return decoded.map((item) {
+      final mapItem = item as Map<String, dynamic>;
+      final carbohydrate = parseDouble(mapItem['carbohydrate']);
+      final protein = parseDouble(mapItem['protein']);
+      final fat = parseDouble(mapItem['fat']);
+      final sugar = parseDouble(mapItem['sugar']);
+
+      return FoodItem(
+        name: mapItem['name'] ?? '',
+        amountLabel: mapItem['amountLabel'] ?? '1인분',
+        servingCount: 1.0,
+        calories: calculateCalories(
+          carbohydrate: carbohydrate,
+          protein: protein,
+          fat: fat,
+        ),
+        carbohydrate: carbohydrate,
+        protein: protein,
+        fat: fat,
+        sugar: sugar,
+      );
+    }).toList();
   }
 }

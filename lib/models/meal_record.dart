@@ -1,3 +1,4 @@
+import '../utils/nutrition_utils.dart';
 import 'food_item.dart';
 
 class MealRecord {
@@ -5,6 +6,9 @@ class MealRecord {
   final DateTime dateTime;
   final String mealType;
   final List<FoodItem> foods;
+
+  // Firebase Storage 이미지 URL
+  final String imageUrl;
 
   // Gemini 분석 코멘트
   final String aiComment;
@@ -17,6 +21,7 @@ class MealRecord {
     required this.dateTime,
     required this.mealType,
     required this.foods,
+    required this.imageUrl,
     required this.aiComment,
     required this.totalNutrition,
   });
@@ -26,6 +31,7 @@ class MealRecord {
       'dateTime': dateTime.toIso8601String(),
       'mealType': mealType,
       'foods': foods.map((e) => e.toJson()).toList(),
+      'imageUrl': imageUrl,
       'aiComment': aiComment,
       'totalNutrition': totalNutrition,
     };
@@ -39,27 +45,25 @@ class MealRecord {
       foods: (json['foods'] as List<dynamic>? ?? [])
           .map((e) => FoodItem.fromJson(e as Map<String, dynamic>))
           .toList(),
+      imageUrl: json['imageUrl'] ?? '',
       aiComment: json['aiComment'] ?? '',
       totalNutrition: _parseTotalNutrition(json['totalNutrition']),
     );
+  }
+
+  static Map<String, double> totalNutritionFromFoods(List<FoodItem> foods) {
+    return calculateTotalNutrition(foods);
   }
 
   static Map<String, double> _parseTotalNutrition(dynamic value) {
     final map = value as Map<String, dynamic>? ?? {};
 
     return {
-      'calories': _toDouble(map['calories']),
-      'carbohydrate': _toDouble(map['carbohydrate']),
-      'protein': _toDouble(map['protein']),
-      'fat': _toDouble(map['fat']),
-      'sugar': _toDouble(map['sugar']),
+      'calories': parseDouble(map['calories']),
+      'carbohydrate': parseDouble(map['carbohydrate']),
+      'protein': parseDouble(map['protein']),
+      'fat': parseDouble(map['fat']),
+      'sugar': parseDouble(map['sugar']),
     };
-  }
-
-  static double _toDouble(dynamic value) {
-    if (value is int) return value.toDouble();
-    if (value is double) return value;
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    return 0.0;
   }
 }
