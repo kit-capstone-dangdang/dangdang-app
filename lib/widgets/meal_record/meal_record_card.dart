@@ -63,9 +63,7 @@ class MealRecordCard extends StatelessWidget {
                     },
                   ),
           ),
-
           const SizedBox(width: 12),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,9 +87,7 @@ class MealRecordCard extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 8),
-
                     Expanded(
                       child: Text(
                         time,
@@ -104,9 +100,7 @@ class MealRecordCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 6),
-
                 Text(
                   foodName,
                   style: textTheme.titleMedium?.copyWith(
@@ -116,9 +110,7 @@ class MealRecordCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 const SizedBox(height: 5),
-
                 Text(
                   '$itemCount개 품목',
                   style: textTheme.bodySmall?.copyWith(color: Colors.grey),
@@ -126,9 +118,7 @@ class MealRecordCard extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(width: 10),
-
           SizedBox(
             width: 78,
             child: Column(
@@ -143,9 +133,7 @@ class MealRecordCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 const SizedBox(height: 35),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
@@ -156,9 +144,7 @@ class MealRecordCard extends StatelessWidget {
                       iconColor: Colors.grey.shade400,
                       onPressed: onEdit,
                     ),
-
                     const SizedBox(width: 6),
-
                     CustomIcon(
                       icon: Icons.delete_outlined,
                       size: 24,

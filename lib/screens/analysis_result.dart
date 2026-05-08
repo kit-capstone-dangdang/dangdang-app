@@ -1,7 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/common/custom_card.dart';
-import 'dart:io';
 import '../widgets/meal_analysis_result/food_detail_item_card.dart';
 import '../screens/food_edit_page.dart';
 
@@ -10,6 +11,36 @@ class AnalysisResult extends StatelessWidget {
   final Map<String, dynamic> result;
 
   const AnalysisResult({super.key, required this.result, required this.image});
+
+  Widget _buildImage() {
+    if (image == null) {
+      return const SizedBox(
+        height: 300,
+        width: double.infinity,
+        child: Center(child: Icon(Icons.fastfood, size: 64)),
+      );
+    }
+
+    return FutureBuilder<Uint8List>(
+      future: image!.readAsBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox(
+            height: 300,
+            width: double.infinity,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return Image.memory(
+          snapshot.data!,
+          height: 300,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +87,7 @@ class AnalysisResult extends StatelessWidget {
                       backgroundColor: Colors.grey.shade200,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(38),
-                        child: Image.file(
-                          File(image!.path),
-                          height: 300,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                        child: _buildImage(),
                       ),
                     ),
                     const SizedBox(height: 22),
