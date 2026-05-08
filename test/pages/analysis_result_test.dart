@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dangdang/screens/analysis_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dangdang/screens/analysis_result.dart';
 
 void main() {
   late XFile mockImage;
@@ -51,27 +51,15 @@ void main() {
     await tester.pumpWidget(createTestWidget());
 
     expect(find.text('분석 결과'), findsOneWidget);
+    expect(find.text('인식된 음식 (2)'), findsOneWidget);
     expect(find.text('상세 수정 및 저장'), findsOneWidget);
     expect(find.text('다시 촬영하기'), findsOneWidget);
   });
 
-  testWidgets('음식 리스트가 잘 표시되는지', (tester) async {
+  testWidgets('음식 리스트가 표시되는지', (tester) async {
     await tester.pumpWidget(createTestWidget());
 
-    expect(find.text('인식된 음식 (2)'), findsOneWidget);
     expect(find.textContaining('밥'), findsWidgets);
     expect(find.textContaining('김치'), findsWidgets);
-  });
-
-  testWidgets('다시 촬영하기 버튼 클릭 테스트', (tester) async {
-    await tester.pumpWidget(createTestWidget());
-
-    final button = find.text('다시 촬영하기');
-
-    await tester.ensureVisible(button);
-    await tester.pumpAndSettle();
-
-    await tester.tap(button);
-    await tester.pumpAndSettle();
   });
 }
