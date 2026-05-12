@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dangdang/screens/analysis_result.dart';
+import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,7 +43,7 @@ void main() {
 
   Widget createTestWidget() {
     return MaterialApp(
-      home: AnalysisResult(result: mockResult, image: mockImage),
+      home: AnalysisResultPage(result: mockResult, image: mockImage),
     );
   }
 
