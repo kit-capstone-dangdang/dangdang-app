@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import 'navigation/main_navigator.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+
+import 'app/app.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -9,21 +10,4 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const DangDangApp());
-}
-
-class DangDangApp extends StatelessWidget {
-  const DangDangApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '당당하게',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const MainNavigator(),
-    );
-  }
 }

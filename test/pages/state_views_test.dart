@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // 🚨 주의: 아래 경로는 실제 본인이 파일(1번 코드)을 저장한 위치로 바꿔주세요!
-import 'package:dangdang/widgets/common/state_views.dart';
+import 'package:dangdang/core/widgets/common/state_views.dart';
 
 void main() {
   // 테스트 1: 빈 화면(EmptyStateView)이 화면에 잘 그려지는지(렌더링) 확인
