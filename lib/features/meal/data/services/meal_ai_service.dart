@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/core/utils/parsers/value_parser.dart';
 import 'package:dangdang/features/meal/data/prompts/food_refine_prompt.dart';
@@ -48,6 +50,31 @@ class MealAiService {
     return decoded.map(_mapFoodItem).toList();
   }
 
+  Future<MealHabitAnalysisResult> analyzeMealHabits({
+    required List<MealRecord> records,
+    required String scopeLabel,
+  }) async {
+    if (records.isEmpty) {
+      return const MealHabitAnalysisResult(patterns: [], recommendations: []);
+    }
+
+    final mealRecordsJson = jsonEncode(
+      records.map((record) => _buildMealRecordPayload(record)).toList(),
+    );
+    final responseText = await _client.generateText(
+      buildMealHabitAnalysisPrompt(
+        scopeLabel: scopeLabel,
+        mealRecordsJson: mealRecordsJson,
+      ),
+    );
+    final decoded = _client.decodeJsonObject(responseText);
+
+    return MealHabitAnalysisResult(
+      patterns: _readStringList(decoded['patterns']),
+      recommendations: _readStringList(decoded['recommendations']),
+    );
+  }
+
   FoodItem _mapFoodItem(dynamic value) {
     final item = value as Map<String, dynamic>;
 
@@ -62,4 +89,33 @@ class MealAiService {
       sugar: parseDouble(item['sugar']),
     );
   }
+
+  Map<String, dynamic> _buildMealRecordPayload(MealRecord record) {
+    return {
+      'date': record.dateTime.toIso8601String(),
+      'mealType': record.mealType,
+      'foods': record.foods.map((food) => food.toJson()).toList(),
+      'totalNutrition': record.totalNutrition,
+      'aiComment': record.aiComment,
+    };
+  }
+
+  List<String> _readStringList(dynamic value) {
+    final items = value as List<dynamic>? ?? const [];
+
+    return items
+        .map((item) => item.toString().trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+}
+
+class MealHabitAnalysisResult {
+  const MealHabitAnalysisResult({
+    required this.patterns,
+    required this.recommendations,
+  });
+
+  final List<String> patterns;
+  final List<String> recommendations;
 }
