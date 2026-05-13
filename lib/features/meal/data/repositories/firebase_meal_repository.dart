@@ -24,6 +24,7 @@ class FirebaseMealRepository implements MealRepository {
   }
 
   /// READ STREAM (실시간 조회) 추가
+  @override
   Stream<List<MealRecord>> watchMeals() {
     return _collection.orderBy('dateTime', descending: true).snapshots().map((
       snapshot,
