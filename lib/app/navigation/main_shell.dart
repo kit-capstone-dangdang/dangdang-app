@@ -1,3 +1,4 @@
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_record_page.dart';
 import 'package:flutter/material.dart';
 import 'package:dangdang/core/widgets/common/custom_bottom_navigation_bar.dart';
 import 'package:dangdang/features/home/presentation/pages/home_dashboard_page.dart';
@@ -15,7 +16,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> _screens = [
     const HomeDashboardPage(),
-    const Center(child: Text('혈당 기록 화면')),
+    const BloodSugarRecordPage(),
     const MealRecordPage(),
     const Center(child: Text('AI 챗 화면')),
   ];
