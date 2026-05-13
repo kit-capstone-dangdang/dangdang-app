@@ -1,11 +1,18 @@
+import 'package:dangdang/features/blood_glucose/data/datasources/dummy_blood_sugar_records.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fl_chart/fl_chart.dart'; // 💡 fl_chart 추가
 import 'package:dangdang/core/widgets/common/custom_card.dart';
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
 import 'package:dangdang/core/widgets/common/state_views.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
+import '../../blood_glucose/domain/entities/blood_sugar_record.dart';
+import '../../blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -164,7 +171,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.surfaceVariant,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
                   minimumSize: const Size(double.infinity, 60),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
@@ -178,6 +185,21 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         );
       },
     );
+  }
+
+  List<BloodSugarRecord> get _sortedRecords {
+    var sorted = List<BloodSugarRecord>.from(dummyBloodSugarRecords);
+    sorted.sort((a, b) => a.dateTime.compareTo(b.dateTime));
+    return sorted;
+  }
+
+  List<FlSpot> get _chartSpots {
+    final records = _sortedRecords;
+    List<FlSpot> spots = [];
+    for (int i = 0; i < records.length; i++) {
+      spots.add(FlSpot(i.toDouble(), records[i].bloodSugar.toDouble()));
+    }
+    return spots;
   }
 
   @override
@@ -322,9 +344,12 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                           Expanded(
                             child: CustomCard(
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('혈당 기록 화면으로 이동합니다.'),
+                                // 🚀 여기도 분석 화면으로 연결!
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const BloodSugarAnalysisScreen(),
                                   ),
                                 );
                               },
@@ -348,6 +373,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                               ),
                             ),
                           ),
+
                           const SizedBox(width: 20),
                           Expanded(
                             child: CustomCard(
@@ -390,7 +416,14 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                               ),
                               TextButton(
                                 onPressed: () {
-                                  // TODO: 상세 리포트 페이지로 이동
+                                  // 🚀 혈당 분석 화면으로 이동!
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const BloodSugarAnalysisScreen(),
+                                    ),
+                                  );
                                 },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
@@ -410,14 +443,14 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                           const SizedBox(height: 20),
                           CustomCard(
                             child: SizedBox(
-                              height: 110,
+                              // 💡 대시보드 카드에 맞게 그래프 높이를 조금 조절했습니다
+                              height: 150,
                               width: double.infinity,
                               child: Center(
-                                child: Text(
-                                  '그래프 영역 (그래프 패키지 필요)',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
+                                child: BloodGlucoseLineChart(
+                                  chartSpots: _chartSpots,
+                                  sortedRecords: _sortedRecords,
+                                  selectedIndex: 1, // 대시보드는 '주간' 기준
                                 ),
                               ),
                             ),
