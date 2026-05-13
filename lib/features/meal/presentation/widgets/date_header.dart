@@ -11,13 +11,13 @@ class DateHeader extends StatelessWidget {
 
     return Row(
       children: [
-        const Icon(Icons.calendar_today_outlined, size: 24, color: Colors.grey),
-        const SizedBox(width: 10),
+        const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.grey),
+        const SizedBox(width: 8),
         Text(
           date,
-          style: textTheme.titleSmall?.copyWith(
+          style: textTheme.bodySmall?.copyWith(
             color: Colors.grey,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
