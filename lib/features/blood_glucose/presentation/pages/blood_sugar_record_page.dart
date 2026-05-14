@@ -37,11 +37,9 @@ class BloodSugarRecordPage extends StatelessWidget {
 
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                 children: [
                   Text(
                     '혈당 기록',
-
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
@@ -50,34 +48,33 @@ class BloodSugarRecordPage extends StatelessWidget {
 
                   Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.show_chart_outlined,
-                          size: 28,
-                          color: Colors.black54,
-                        ),
+                      CustomIcon(
+                        icon: Icons.show_chart_rounded,
+                        size: 52,
+                        backgroundColor: const Color(0xFFF3F4F6),
+                        iconColor: const Color(0xFF6B7280),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const BloodSugarAnalysisScreen(),
+                              builder: (_) => const BloodSugarAnalysisScreen(),
                             ),
                           );
                         },
                       ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add_box,
-                          size: 28,
-                          color: Colors.blue,
-                        ),
+
+                      const SizedBox(width: 10),
+
+                      CustomIcon(
+                        icon: Icons.add,
+                        size: 52,
+                        backgroundColor: const Color(0xFF2962FF),
+                        iconColor: Colors.white,
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const BloodSugarAddPage(),
+                              builder: (_) => const BloodSugarAddPage(),
                             ),
                           );
                         },
@@ -91,22 +88,16 @@ class BloodSugarRecordPage extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-
                   children: List.generate(records.length, (index) {
                     final record = records[index];
-
                     bool showDateHeader = false;
-
                     if (index == 0) {
                       showDateHeader = true;
                     } else {
                       final prevDate = _formatDate(records[index - 1].dateTime);
-
                       final currDate = _formatDate(record.dateTime);
-
                       if (prevDate != currDate) {
                         showDateHeader = true;
                       }
@@ -114,19 +105,14 @@ class BloodSugarRecordPage extends StatelessWidget {
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-
                       children: [
                         if (showDateHeader) ...[
                           if (index > 0) const SizedBox(height: 32),
-
                           DateHeader(date: _formatDate(record.dateTime)),
-
                           const SizedBox(height: 16),
                         ],
-
                         Padding(
                           padding: const EdgeInsets.only(bottom: 20),
-
                           child: BloodSugarRecordCard(
                             record: record,
                             onEdit: () {
