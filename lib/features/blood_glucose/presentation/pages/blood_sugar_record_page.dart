@@ -1,5 +1,6 @@
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
 import 'package:dangdang/features/blood_glucose/data/datasources/blood_sugar_dummy_data.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_edit_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_sugar_record_card.dart';
@@ -35,48 +36,48 @@ class BloodSugarRecordPage extends StatelessWidget {
               toolbarHeight: 70,
 
               title: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                 children: [
                   Text(
                     '혈당 기록',
 
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
                   ),
 
                   Row(
                     children: [
-                      CustomIcon(
-                        icon: Icons.show_chart_rounded,
-                        size: 52,
-                        backgroundColor:
-                            const Color(0xFFF3F4F6),
-                        iconColor:
-                            const Color(0xFF6B7280),
-                        onPressed: () {},
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      CustomIcon(
-                        icon: Icons.add,
-                        size: 52,
-                        backgroundColor:
-                            const Color(0xFF2962FF),
-                        iconColor: Colors.white,
+                      IconButton(
+                        icon: const Icon(
+                          Icons.show_chart_outlined,
+                          size: 28,
+                          color: Colors.black54,
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const BloodSugarAddPage(),
+                              builder: (context) =>
+                                  const BloodSugarAnalysisScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.add_box,
+                          size: 28,
+                          color: Colors.blue,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BloodSugarAddPage(),
                             ),
                           );
                         },
@@ -92,76 +93,56 @@ class BloodSugarRecordPage extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
 
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
-                  children: List.generate(
-                    records.length,
-                    (index) {
-                      final record = records[index];
+                  children: List.generate(records.length, (index) {
+                    final record = records[index];
 
-                      bool showDateHeader = false;
+                    bool showDateHeader = false;
 
-                      if (index == 0) {
+                    if (index == 0) {
+                      showDateHeader = true;
+                    } else {
+                      final prevDate = _formatDate(records[index - 1].dateTime);
+
+                      final currDate = _formatDate(record.dateTime);
+
+                      if (prevDate != currDate) {
                         showDateHeader = true;
-                      } else {
-                        final prevDate = _formatDate(
-                          records[index - 1].dateTime,
-                        );
-
-                        final currDate = _formatDate(
-                          record.dateTime,
-                        );
-
-                        if (prevDate != currDate) {
-                          showDateHeader = true;
-                        }
                       }
+                    }
 
-                      return Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
-                        children: [
-                          if (showDateHeader) ...[
-                            if (index > 0)
-                              const SizedBox(height: 32),
+                      children: [
+                        if (showDateHeader) ...[
+                          if (index > 0) const SizedBox(height: 32),
 
-                            DateHeader(
-                              date: _formatDate(
-                                record.dateTime,
-                              ),
-                            ),
+                          DateHeader(date: _formatDate(record.dateTime)),
 
-                            const SizedBox(height: 16),
-                          ],
-
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(
-                                  bottom: 20,
-                                ),
-
-                            child: BloodSugarRecordCard(
-                              record: record,
-                              onEdit: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (_) =>
-                                            BloodSugarEditPage(
-                                              record: record,
-                                            ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                          const SizedBox(height: 16),
                         ],
-                      );
-                    },
-                  ),
+
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+
+                          child: BloodSugarRecordCard(
+                            record: record,
+                            onEdit: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      BloodSugarEditPage(record: record),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ),

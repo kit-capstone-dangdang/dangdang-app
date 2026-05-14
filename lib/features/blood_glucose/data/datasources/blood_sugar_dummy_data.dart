@@ -22,7 +22,7 @@ final dummyBloodSugarRecords = [
     memo: '점심 김치찌개',
   ),
 
-    BloodSugarRecord(
+  BloodSugarRecord(
     dateTime: DateTime(2026, 3, 25, 17, 0),
     bloodSugar: 120,
     mealState: '식전',
