@@ -1,5 +1,6 @@
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
 import 'package:dangdang/features/blood_glucose/data/datasources/blood_sugar_dummy_data.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_edit_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_sugar_record_card.dart';
@@ -60,7 +61,15 @@ class BloodSugarRecordPage extends StatelessWidget {
                             const Color(0xFFF3F4F6),
                         iconColor:
                             const Color(0xFF6B7280),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const BloodSugarAnalysisScreen(),
+                            ),
+                          );
+                        },
                       ),
 
                       const SizedBox(width: 10),
