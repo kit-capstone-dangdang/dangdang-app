@@ -1,6 +1,6 @@
-import 'package:dangdang/core/widgets/common/record_action_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:dangdang/core/widgets/common/custom_card.dart';
+import 'package:dangdang/core/widgets/common/custom_icon.dart';
 
 class MealRecordCard extends StatelessWidget {
   final String mealType;
@@ -9,6 +9,7 @@ class MealRecordCard extends StatelessWidget {
   final String foodName;
   final int itemCount;
   final String imageUrl;
+
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -63,7 +64,9 @@ class MealRecordCard extends StatelessWidget {
                     },
                   ),
           ),
+
           const SizedBox(width: 12),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,6 +82,7 @@ class MealRecordCard extends StatelessWidget {
                         color: const Color(0xFFE8F0FF),
                         borderRadius: BorderRadius.circular(12),
                       ),
+
                       child: Text(
                         mealType,
                         style: textTheme.labelSmall?.copyWith(
@@ -87,7 +91,9 @@ class MealRecordCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     const SizedBox(width: 8),
+
                     Expanded(
                       child: Text(
                         time,
@@ -100,7 +106,9 @@ class MealRecordCard extends StatelessWidget {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 6),
+
                 Text(
                   foodName,
                   style: textTheme.titleMedium?.copyWith(
@@ -110,6 +118,7 @@ class MealRecordCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+
                 const SizedBox(height: 5),
                 Text(
                   '$itemCount개 품목',
@@ -118,7 +127,9 @@ class MealRecordCard extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(width: 10),
+
           SizedBox(
             width: 78,
             child: Column(
@@ -133,10 +144,30 @@ class MealRecordCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+
                 const SizedBox(height: 35),
-                RecordActionButtons(
-                  onEdit: onEdit,
-                  onDelete: onDelete,
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+
+                  children: [
+                    CustomIcon(
+                      icon: Icons.edit_outlined,
+                      size: 24,
+                      iconColor: Colors.grey.shade400,
+                      onPressed: onEdit,
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    CustomIcon(
+                      icon: Icons.delete_outlined,
+                      size: 24,
+                      iconColor: Colors.grey.shade400,
+                      onPressed: onDelete,
+                    ),
+                  ],
                 ),
               ],
             ),
