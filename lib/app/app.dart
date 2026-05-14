@@ -10,7 +10,10 @@ class DangDangApp extends StatelessWidget {
       title: '당당하게',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          surface: Colors.white,
+        ),
         useMaterial3: true,
       ),
       home: const MainShell(),
