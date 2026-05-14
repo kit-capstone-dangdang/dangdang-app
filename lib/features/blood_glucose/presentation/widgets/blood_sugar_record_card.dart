@@ -1,4 +1,5 @@
 import 'package:dangdang/core/widgets/common/custom_card.dart';
+import 'package:dangdang/core/widgets/common/record_action_buttons.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
 import 'package:flutter/material.dart';
 
@@ -129,27 +130,10 @@ class BloodSugarRecordCard extends StatelessWidget {
           ),
 
           /// 아이콘
-          Row(
-            children: [
-              IconButton(
-                onPressed: onEdit,
-
-                icon: const Icon(
-                  Icons.edit_outlined,
-                  color: Color(0xFF98A2B3),
-                ),
-              ),
-
-              IconButton(
-                onPressed: onDelete,
-
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Color(0xFF98A2B3),
-                ),
-              ),
-            ],
-          ),
+          RecordActionButtons(
+            onEdit: onEdit,
+            onDelete: onDelete,
+          )
         ],
       ),
     );

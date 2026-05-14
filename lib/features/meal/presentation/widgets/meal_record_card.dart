@@ -1,6 +1,6 @@
+import 'package:dangdang/core/widgets/common/record_action_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:dangdang/core/widgets/common/custom_card.dart';
-import 'package:dangdang/core/widgets/common/custom_icon.dart';
 
 class MealRecordCard extends StatelessWidget {
   final String mealType;
@@ -134,24 +134,9 @@ class MealRecordCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 35),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomIcon(
-                      icon: Icons.edit_outlined,
-                      size: 24,
-                      iconColor: Colors.grey.shade400,
-                      onPressed: onEdit,
-                    ),
-                    const SizedBox(width: 6),
-                    CustomIcon(
-                      icon: Icons.delete_outlined,
-                      size: 24,
-                      iconColor: Colors.grey.shade400,
-                      onPressed: onDelete,
-                    ),
-                  ],
+                RecordActionButtons(
+                  onEdit: onEdit,
+                  onDelete: onDelete,
                 ),
               ],
             ),
