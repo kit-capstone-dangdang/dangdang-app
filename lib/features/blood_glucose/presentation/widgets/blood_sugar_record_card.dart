@@ -23,32 +23,24 @@ class BloodSugarRecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isHigh = record.bloodSugar >= 140;
-
     final valueColor = isHigh ? Colors.red : const Color(0xFF2962FF);
-
     final bgColor = isHigh ? const Color(0xFFFFF2F2) : const Color(0xFFF2F5FF);
 
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-
       borderRadius: 28,
-
       child: Row(
         children: [
           /// 혈당 수치
           Container(
             width: 64,
             height: 64,
-
             decoration: BoxDecoration(
               color: bgColor,
-
               borderRadius: BorderRadius.circular(22),
             ),
-
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-
               children: [
                 Text(
                   '${record.bloodSugar}',
@@ -58,10 +50,8 @@ class BloodSugarRecordCard extends StatelessWidget {
                     color: valueColor,
                   ),
                 ),
-
                 Text(
                   'mg/dL',
-
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -78,7 +68,6 @@ class BloodSugarRecordCard extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
                 Row(
                   children: [
@@ -90,19 +79,14 @@ class BloodSugarRecordCard extends StatelessWidget {
                         color: Colors.black,
                       ),
                     ),
-
                     const SizedBox(width: 8),
-
                     Text(
                       _formatTime(record.dateTime),
-
                       style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
                   record.memo,
                   style: TextStyle(fontSize: 18, color: Colors.grey[700]),
@@ -114,7 +98,6 @@ class BloodSugarRecordCard extends StatelessWidget {
           /// 아이콘
           Row(
             mainAxisSize: MainAxisSize.min,
-
             children: [
               CustomIcon(
                 icon: Icons.edit_outlined,
@@ -122,9 +105,7 @@ class BloodSugarRecordCard extends StatelessWidget {
                 iconColor: Colors.grey.shade400,
                 onPressed: onEdit,
               ),
-
               const SizedBox(width: 6),
-
               CustomIcon(
                 icon: Icons.delete_outlined,
                 size: 24,
