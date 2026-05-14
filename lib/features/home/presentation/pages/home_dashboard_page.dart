@@ -1,4 +1,4 @@
-import 'package:dangdang/features/blood_glucose/data/datasources/dummy_blood_sugar_records.dart';
+import 'package:dangdang/features/blood_glucose/data/datasources/blood_sugar_dummy_data.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +13,8 @@ import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.d
 import '../../blood_glucose/domain/entities/blood_sugar_record.dart';
 import '../../blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_edit_page.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -344,13 +346,13 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                           Expanded(
                             child: CustomCard(
                               onTap: () {
-                                // 🚀 여기도 분석 화면으로 연결!
+                                // 🚀 새 기록 추가 화면으로 연결!
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const BloodSugarAnalysisScreen(),
-                                  ),
+                                        const BloodSugarAddPage(),
+                                  ), // MaterialPageRoute
                                 );
                               },
                               child: Column(
