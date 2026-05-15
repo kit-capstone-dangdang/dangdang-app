@@ -1,5 +1,5 @@
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
-import 'package:dangdang/features/blood_glucose/domain/repositories/firebase_blood_sugar_repository.dart';
+import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:flutter/material.dart';
 
 class BloodSugarForm extends StatefulWidget {

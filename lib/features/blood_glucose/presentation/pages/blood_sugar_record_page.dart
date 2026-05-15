@@ -1,6 +1,6 @@
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
-import 'package:dangdang/features/blood_glucose/domain/repositories/firebase_blood_sugar_repository.dart';
+import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_edit_page.dart';
