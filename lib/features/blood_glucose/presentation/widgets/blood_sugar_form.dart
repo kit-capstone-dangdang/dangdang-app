@@ -1,4 +1,5 @@
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/repositories/firebase_blood_sugar_repository.dart';
 import 'package:flutter/material.dart';
 
 class BloodSugarForm extends StatefulWidget {
@@ -19,13 +20,12 @@ class BloodSugarForm extends StatefulWidget {
 
 class _BloodSugarFormState extends State<BloodSugarForm> {
   final TextEditingController sugarController = TextEditingController();
-
   final TextEditingController memoController = TextEditingController();
 
+  final repository = FirebaseBloodSugarRepository();
+
   String selectedType = '식전';
-
   DateTime selectedDate = DateTime.now();
-
   TimeOfDay selectedTime = TimeOfDay.now();
 
   final List<String> types = ['공복', '식전', '식후', '취침전'];
@@ -33,18 +33,13 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
   @override
   void initState() {
     super.initState();
-
     final record = widget.initialRecord;
 
     if (record != null) {
       sugarController.text = record.bloodSugar.toString();
-
       memoController.text = record.memo;
-
       selectedType = record.mealState;
-
       selectedDate = record.dateTime;
-
       selectedTime = TimeOfDay(
         hour: record.dateTime.hour,
         minute: record.dateTime.minute,
@@ -86,9 +81,7 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
 
   String formatTime(TimeOfDay time) {
     final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-
     final minute = time.minute.toString().padLeft(2, '0');
-
     final period = time.period == DayPeriod.am ? '오전' : '오후';
 
     return '$period ${hour.toString().padLeft(2, '0')}:$minute';
@@ -98,33 +91,27 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
-
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.black,
           ),
         ),
-
         title: Text(
           widget.title,
-
           style: const TextStyle(
             fontWeight: FontWeight.w700,
             color: Colors.black,
           ),
         ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -462,13 +449,48 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
                   width: double.infinity,
                   height: 66,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final bloodSugar =
+                          int.tryParse(sugarController.text);
+
+                      if (bloodSugar == null) {
+                        return;
+                      }
+
+                      final dateTime = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        selectedTime.hour,
+                        selectedTime.minute,
+                      );
+
+                      final record = BloodSugarRecord(
+                        id: widget.initialRecord?.id ?? '',
+                        dateTime: dateTime,
+                        bloodSugar: bloodSugar,
+                        mealState: selectedType,
+                        memo: memoController.text,
+                      );
+
+                      if (widget.initialRecord == null) {
+                        await repository.createRecord(record);
+                      } else {
+                        await repository.updateRecord(record);
+                      }
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2962FF),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
                       ),
                     ),
+
                     child: Text(
                       widget.buttonText,
                       style: const TextStyle(
