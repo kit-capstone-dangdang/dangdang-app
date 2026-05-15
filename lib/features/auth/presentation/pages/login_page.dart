@@ -1,3 +1,5 @@
+import 'package:dangdang/app/navigation/main_shell.dart';
+import 'package:dangdang/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:dangdang/features/auth/presentation/pages/signup_page.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
@@ -12,10 +14,43 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+
+  Future<void> _signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('이메일과 비밀번호를 입력해 주세요.');
+      return;
+    }
+
+    try {
+      await _authRepository.signIn(email: email, password: password);
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainShell()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      _showMessage(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   void dispose() {
@@ -159,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    AuthButton(text: '로그인', onPressed: () {}),
+                    AuthButton(text: '로그인', onPressed: _signIn),
                   ],
                 ),
               ),

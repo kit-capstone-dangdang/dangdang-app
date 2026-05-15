@@ -1,6 +1,6 @@
 import 'package:dangdang/app/navigation/main_shell.dart';
 import 'package:flutter/material.dart';
-// import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/login_page.dart';
 
 class DangDangApp extends StatelessWidget {
   const DangDangApp({super.key});
@@ -17,7 +17,7 @@ class DangDangApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MainShell(), // 로그인 화면 나중에 여기다가 하면 됨
+      home: const LoginPage(), // 로그인 화면 나중에 여기다가 하면 됨
     );
   }
 }
