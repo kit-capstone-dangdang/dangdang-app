@@ -1,4 +1,5 @@
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/repositories/firebase_blood_sugar_repository.dart';
 import 'package:flutter/material.dart';
 
 class BloodSugarForm extends StatefulWidget {
@@ -14,47 +15,31 @@ class BloodSugarForm extends StatefulWidget {
   });
 
   @override
-  State<BloodSugarForm> createState() =>
-      _BloodSugarFormState();
+  State<BloodSugarForm> createState() => _BloodSugarFormState();
 }
 
-class _BloodSugarFormState
-    extends State<BloodSugarForm> {
-  final TextEditingController sugarController =
-      TextEditingController();
+class _BloodSugarFormState extends State<BloodSugarForm> {
+  final TextEditingController sugarController = TextEditingController();
+  final TextEditingController memoController = TextEditingController();
 
-  final TextEditingController memoController =
-      TextEditingController();
+  final repository = FirebaseBloodSugarRepository();
 
   String selectedType = '식전';
-
   DateTime selectedDate = DateTime.now();
-
   TimeOfDay selectedTime = TimeOfDay.now();
 
-  final List<String> types = [
-    '공복',
-    '식전',
-    '식후',
-    '취침전',
-  ];
+  final List<String> types = ['공복', '식전', '식후', '취침전'];
 
   @override
   void initState() {
     super.initState();
-
     final record = widget.initialRecord;
 
     if (record != null) {
-      sugarController.text =
-          record.bloodSugar.toString();
-
+      sugarController.text = record.bloodSugar.toString();
       memoController.text = record.memo;
-
       selectedType = record.mealState;
-
       selectedDate = record.dateTime;
-
       selectedTime = TimeOfDay(
         hour: record.dateTime.hour,
         minute: record.dateTime.minute,
@@ -95,16 +80,9 @@ class _BloodSugarFormState
   }
 
   String formatTime(TimeOfDay time) {
-    final hour =
-        time.hourOfPeriod == 0
-            ? 12
-            : time.hourOfPeriod;
-
-    final minute =
-        time.minute.toString().padLeft(2, '0');
-
-    final period =
-        time.period == DayPeriod.am ? '오전' : '오후';
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? '오전' : '오후';
 
     return '$period ${hour.toString().padLeft(2, '0')}:$minute';
   }
@@ -113,44 +91,33 @@ class _BloodSugarFormState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
-
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.black,
           ),
         ),
-
         title: Text(
           widget.title,
-
           style: const TextStyle(
             fontWeight: FontWeight.w700,
             color: Colors.black,
           ),
         ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-            ),
-
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
 
@@ -160,7 +127,6 @@ class _BloodSugarFormState
                     children: [
                       Text(
                         '혈당 수치 입력',
-
                         style: TextStyle(
                           fontSize: 20,
                           color: Colors.grey[500],
@@ -172,104 +138,59 @@ class _BloodSugarFormState
 
                       SizedBox(
                         width: 250,
-
                         child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.center,
-
-                          crossAxisAlignment:
-                              CrossAxisAlignment.end,
-
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             SizedBox(
                               width: 140,
-
                               child: TextField(
-                                controller:
-                                    sugarController,
-
+                                controller: sugarController,
                                 onChanged: (_) {
                                   setState(() {});
                                 },
-
-                                keyboardType:
-                                    TextInputType.number,
-
-                                textAlign:
-                                    TextAlign.center,
-
+                                keyboardType: TextInputType.number,
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 72,
-                                  fontWeight:
-                                      FontWeight.w700,
-
-                                  color:
-                                      sugarController
-                                              .text
-                                              .isEmpty
-                                          ? const Color(
-                                            0xFFDDDDDD,
-                                          )
-                                          : Colors.black,
+                                  fontWeight: FontWeight.w700,
+                                  color: sugarController.text.isEmpty
+                                      ? const Color(0xFFDDDDDD)
+                                      : Colors.black,
                                 ),
 
-                                decoration:
-                                    const InputDecoration(
-                                      hintText: '000',
-
-                                      hintStyle:
-                                          TextStyle(
-                                            color: Color(
-                                              0xFFDDDDDD,
-                                            ),
-                                          ),
-
-                                      enabledBorder:
-                                          UnderlineInputBorder(
-                                            borderSide:
-                                                BorderSide(
-                                                  color:
-                                                      Color(
-                                                        0xFF2962FF,
-                                                      ),
-                                                  width:
-                                                      3,
-                                                ),
-                                          ),
-
-                                      focusedBorder:
-                                          UnderlineInputBorder(
-                                            borderSide:
-                                                BorderSide(
-                                                  color:
-                                                      Color(
-                                                        0xFF2962FF,
-                                                      ),
-                                                  width:
-                                                      3,
-                                                ),
-                                          ),
+                                decoration: const InputDecoration(
+                                  hintText: '000',
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFFDDDDDD),
+                                  ),
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFF2962FF),
+                                      width: 3,
                                     ),
+                                  ),
+
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFF2962FF),
+                                      width: 3,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
 
                             const SizedBox(width: 12),
 
                             Padding(
-                              padding:
-                                  const EdgeInsets.only(
-                                    bottom: 12,
-                                  ),
-
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: Text(
                                 'mg/dL',
-
                                 style: TextStyle(
                                   fontSize: 24,
-                                  fontWeight:
-                                      FontWeight.w700,
-                                  color:
-                                      Colors.grey[500],
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.grey[500],
                                 ),
                               ),
                             ),
@@ -285,16 +206,10 @@ class _BloodSugarFormState
                 /// 측정 시점
                 Row(
                   children: const [
-                    Icon(
-                      Icons.access_time_rounded,
-                      color: Color(0xFF2962FF),
-                    ),
-
+                    Icon(Icons.access_time_rounded, color: Color(0xFF2962FF)),
                     SizedBox(width: 10),
-
                     Text(
                       '측정 시점',
-
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -307,16 +222,10 @@ class _BloodSugarFormState
 
                 Row(
                   children: types.map((type) {
-                    final bool isSelected =
-                        selectedType == type;
-
+                    final bool isSelected = selectedType == type;
                     return Expanded(
                       child: Padding(
-                        padding:
-                            const EdgeInsets.only(
-                              right: 8,
-                            ),
-
+                        padding: const EdgeInsets.only(right: 8),
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -326,62 +235,36 @@ class _BloodSugarFormState
 
                           child: Container(
                             height: 52,
-
                             decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? const Color(
-                                        0xFF2962FF,
-                                      )
-                                      : Colors.white,
-
-                              borderRadius:
-                                  BorderRadius.circular(
-                                    18,
-                                  ),
-
+                              color: isSelected
+                                  ? const Color(0xFF2962FF)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
-                                color: const Color(
-                                  0xFFE5E7EB,
-                                ),
+                                color: const Color(0xFFE5E7EB),
                               ),
-
-                              boxShadow:
-                                  isSelected
-                                      ? [
-                                        BoxShadow(
-                                          color:
-                                              const Color(
-                                                0xFF2962FF,
-                                              ).withOpacity(
-                                                0.25,
-                                              ),
-                                          blurRadius:
-                                              12,
-                                          offset:
-                                              const Offset(
-                                                0,
-                                                4,
-                                              ),
-                                        ),
-                                      ]
-                                      : null,
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF2962FF,
+                                        ).withOpacity(0.25),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : null,
                             ),
 
                             child: Center(
                               child: Text(
                                 type,
-
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight:
-                                      FontWeight.w600,
-
-                                  color:
-                                      isSelected
-                                          ? Colors.white
-                                          : Colors
-                                              .grey[500],
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.grey[500],
                                 ),
                               ),
                             ),
@@ -399,29 +282,23 @@ class _BloodSugarFormState
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: const [
                               Icon(
                                 Icons.calendar_today,
                                 size: 20,
-                                color: Color(
-                                  0xFF2962FF,
-                                ),
+                                color: Color(0xFF2962FF),
                               ),
 
                               SizedBox(width: 8),
 
                               Text(
                                 '날짜',
-
                                 style: TextStyle(
                                   fontSize: 20,
-                                  fontWeight:
-                                      FontWeight.w700,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -431,59 +308,34 @@ class _BloodSugarFormState
 
                           GestureDetector(
                             onTap: pickDate,
-
                             child: Container(
                               height: 62,
-
-                              padding:
-                                  const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                  ),
-
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFF5F6F8,
-                                ),
-
-                                borderRadius:
-                                    BorderRadius.circular(
-                                      18,
-                                    ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
                               ),
-
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F6F8),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
                               child: Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment
-                                        .spaceBetween,
-
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      formatDate(
-                                        selectedDate,
+                                      formatDate(selectedDate),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
                                       ),
-
-                                      overflow:
-                                          TextOverflow
-                                              .ellipsis,
-
-                                      style:
-                                          const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight:
-                                                FontWeight
-                                                    .w500,
-                                          ),
                                     ),
                                   ),
 
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
+                                  const SizedBox(width: 8),
 
                                   const Icon(
-                                    Icons
-                                        .calendar_today_outlined,
+                                    Icons.calendar_today_outlined,
                                     size: 20,
                                   ),
                                 ],
@@ -498,29 +350,21 @@ class _BloodSugarFormState
 
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: const [
                               Icon(
                                 Icons.access_time,
                                 size: 20,
-                                color: Color(
-                                  0xFF2962FF,
-                                ),
+                                color: Color(0xFF2962FF),
                               ),
-
                               SizedBox(width: 8),
-
                               Text(
                                 '시간',
-
                                 style: TextStyle(
                                   fontSize: 20,
-                                  fontWeight:
-                                      FontWeight.w700,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -530,59 +374,34 @@ class _BloodSugarFormState
 
                           GestureDetector(
                             onTap: pickTime,
-
                             child: Container(
                               height: 62,
-
-                              padding:
-                                  const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                  ),
-
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFF5F6F8,
-                                ),
-
-                                borderRadius:
-                                    BorderRadius.circular(
-                                      18,
-                                    ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
                               ),
-
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F6F8),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
                               child: Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment
-                                        .spaceBetween,
-
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      formatTime(
-                                        selectedTime,
+                                      formatTime(selectedTime),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
                                       ),
-
-                                      overflow:
-                                          TextOverflow
-                                              .ellipsis,
-
-                                      style:
-                                          const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight:
-                                                FontWeight
-                                                    .w500,
-                                          ),
                                     ),
                                   ),
 
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
+                                  const SizedBox(width: 8),
 
                                   const Icon(
-                                    Icons
-                                        .access_time_outlined,
+                                    Icons.access_time_outlined,
                                     size: 20,
                                   ),
                                 ],
@@ -600,35 +419,24 @@ class _BloodSugarFormState
                 /// 메모
                 const Text(
                   '메모 (선택)',
-
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
 
                 const SizedBox(height: 14),
 
                 Container(
                   height: 120,
-
                   padding: const EdgeInsets.all(18),
-
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F6F8),
-
-                    borderRadius:
-                        BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20),
                   ),
 
                   child: TextField(
                     controller: memoController,
-
                     maxLines: null,
-
                     decoration: const InputDecoration(
                       hintText: '특이사항을 입력하세요',
-
                       border: InputBorder.none,
                     ),
                   ),
@@ -640,23 +448,51 @@ class _BloodSugarFormState
                 SizedBox(
                   width: double.infinity,
                   height: 66,
-
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final bloodSugar =
+                          int.tryParse(sugarController.text);
+
+                      if (bloodSugar == null) {
+                        return;
+                      }
+
+                      final dateTime = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        selectedTime.hour,
+                        selectedTime.minute,
+                      );
+
+                      final record = BloodSugarRecord(
+                        id: widget.initialRecord?.id ?? '',
+                        dateTime: dateTime,
+                        bloodSugar: bloodSugar,
+                        mealState: selectedType,
+                        memo: memoController.text,
+                      );
+
+                      if (widget.initialRecord == null) {
+                        await repository.createRecord(record);
+                      } else {
+                        await repository.updateRecord(record);
+                      }
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFF2962FF),
-
+                      backgroundColor: const Color(0xFF2962FF),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(22),
                       ),
                     ),
 
                     child: Text(
                       widget.buttonText,
-
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,

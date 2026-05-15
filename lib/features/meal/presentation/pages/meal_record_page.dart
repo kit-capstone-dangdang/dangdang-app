@@ -639,14 +639,23 @@ class _MealRecordPageState extends State<MealRecordPage> {
 
                   return CustomScrollView(
                     slivers: [
+                      SliverAppBar(
+                        floating: true,
+                        pinned: false,
+                        snap: true,
+                        automaticallyImplyLeading: false,
+                        backgroundColor: Colors.white,
+                        surfaceTintColor: Colors.white,
+                        toolbarHeight: 82,
+                        titleSpacing: 24,
+                        title: _buildTopHeader(filteredRecords),
+                      ),
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildTopHeader(filteredRecords),
-                              const SizedBox(height: 24),
                               _buildRangeFilterCard(),
                               const SizedBox(height: 16),
                               _buildMealTabs(),
