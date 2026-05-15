@@ -1,7 +1,7 @@
 // 혈당 분석(그래프) 화면
 
 import 'package:dangdang/features/blood_glucose/data/datasources/blood_sugar_dummy_data.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/ai_report_card.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_stat_card.dart';

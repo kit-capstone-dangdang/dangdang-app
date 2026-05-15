@@ -1,7 +1,7 @@
 // 혈당 곡선 그래프
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../domain/entities/blood_sugar_record.dart';
+import '../../domain/entities/blood_glucose_record.dart';
 
 class BloodGlucoseLineChart extends StatelessWidget {
   final List<FlSpot> chartSpots;
