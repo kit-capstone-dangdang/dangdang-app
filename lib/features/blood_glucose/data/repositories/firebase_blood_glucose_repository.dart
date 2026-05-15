@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
-import 'package:dangdang/features/blood_glucose/domain/repositories/blood_sugar_repository.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/repositories/blood_glucose_repository.dart';
 
 class FirebaseBloodSugarRepository
     implements BloodSugarRepository {

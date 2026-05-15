@@ -1,5 +1,5 @@
 import 'package:dangdang/features/blood_glucose/data/datasources/blood_sugar_dummy_data.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,8 +13,8 @@ import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.d
 import '../../blood_glucose/domain/entities/blood_sugar_record.dart';
 import '../../blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_edit_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_add_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_edit_page.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
