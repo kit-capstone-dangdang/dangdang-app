@@ -3,7 +3,6 @@ import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_edit_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_sugar_record_card.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +65,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const BloodSugarAnalysisScreen(),
+                                  const BloodSugarAnalysisPage(),
                             ),
                           );
                         },

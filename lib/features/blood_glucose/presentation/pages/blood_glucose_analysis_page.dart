@@ -13,15 +13,15 @@ import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/services/blood_sugar_ai_service.dart';
 import 'dart:convert';
 
-class BloodSugarAnalysisScreen extends StatefulWidget {
-  const BloodSugarAnalysisScreen({super.key});
+class BloodSugarAnalysisPage extends StatefulWidget {
+  const BloodSugarAnalysisPage({super.key});
 
   @override
-  State<BloodSugarAnalysisScreen> createState() =>
+  State<BloodSugarAnalysisPage> createState() =>
       _BloodSugarAnalysisScreenState();
 }
 
-class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
+class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisPage> {
   int _selectedIndex = 1;
   late final BloodSugarAIService _bloodSugarAIService;
   late Future<String> _reportFuture;

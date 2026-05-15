@@ -467,7 +467,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          const BloodSugarAnalysisScreen(),
+                                          const BloodSugarAnalysisPage(),
                                     ),
                                   );
                                 },
