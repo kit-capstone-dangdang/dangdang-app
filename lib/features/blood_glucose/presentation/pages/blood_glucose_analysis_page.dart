@@ -11,6 +11,7 @@ import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_gluco
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_stat_card.dart';
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/services/blood_sugar_ai_service.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
 import 'dart:convert';
 
 class BloodSugarAnalysisScreen extends StatefulWidget {
@@ -87,6 +88,7 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
             bloodSugar: avg,
             mealState: '평균',
             memo: '',
+            id: '',
           ),
         );
       });
@@ -113,6 +115,7 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
             bloodSugar: avg,
             mealState: '평균',
             memo: '',
+            id: '',
           ),
         );
       });
