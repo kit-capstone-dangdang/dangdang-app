@@ -4,6 +4,7 @@ import 'package:dangdang/features/meal/domain/services/nutrition_aggregator.dart
 
 class MealRecord {
   final String id;
+  final String uid;
   final DateTime dateTime;
   final String mealType;
   final List<FoodItem> foods;
@@ -19,6 +20,7 @@ class MealRecord {
 
   MealRecord({
     required this.id,
+    required this.uid,
     required this.dateTime,
     required this.mealType,
     required this.foods,
@@ -29,6 +31,7 @@ class MealRecord {
 
   Map<String, dynamic> toJson() {
     return {
+      'uid': uid,
       'dateTime': dateTime.toIso8601String(),
       'mealType': mealType,
       'foods': foods.map((e) => e.toJson()).toList(),
@@ -41,6 +44,7 @@ class MealRecord {
   factory MealRecord.fromJson(String id, Map<String, dynamic> json) {
     return MealRecord(
       id: id,
+      uid: json['uid'] ?? '',
       dateTime: DateTime.parse(json['dateTime']),
       mealType: json['mealType'] ?? '',
       foods: (json['foods'] as List<dynamic>? ?? [])

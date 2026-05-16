@@ -1,0 +1,16 @@
+import 'package:dangdang/features/auth/domain/entities/user.dart';
+
+abstract class AuthRepository {
+  Future<void> signUp({
+    required String name,
+    required String nickname,
+    required String email,
+    required String password,
+  });
+
+  Future<void> signIn({required String email, required String password});
+
+  Future<void> signOut();
+
+  User? get currentUser;
+}

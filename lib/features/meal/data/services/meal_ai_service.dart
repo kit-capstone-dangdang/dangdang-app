@@ -6,6 +6,7 @@ import 'package:dangdang/features/meal/data/prompts/food_refine_prompt.dart';
 import 'package:dangdang/features/meal/data/prompts/meal_analysis_prompt.dart';
 import 'package:dangdang/features/meal/domain/entities/food_item.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 
 class MealAiService {
@@ -19,6 +20,7 @@ class MealAiService {
     required DateTime dateTime,
     String id = '',
   }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final imageBytes = await image.readAsBytes();
     final responseText = await _client.generateTextFromImage(
       prompt: mealAnalysisPrompt,
@@ -30,6 +32,7 @@ class MealAiService {
 
     return MealRecord(
       id: id,
+      uid: uid,
       dateTime: dateTime,
       mealType: mealType,
       foods: foods,

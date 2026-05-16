@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:dangdang/core/utils/parsers/value_parser.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
@@ -12,6 +11,7 @@ import 'package:dangdang/features/meal/presentation/widgets/food_item_card.dart'
 import 'package:dangdang/features/meal/presentation/widgets/nutrition_summary_box.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FoodEditPage extends StatefulWidget {
   final XFile? image;
@@ -146,9 +146,12 @@ class _FoodEditPageState extends State<FoodEditPage> {
   }
 
   MealRecord _buildMealRecord({required String imageUrl}) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final foodItems = _buildFoodItems();
+
     return MealRecord(
       id: widget.originalRecord?.id ?? '',
+      uid: widget.originalRecord?.uid ?? uid,
       dateTime: _buildSelectedDateTime(),
       mealType: selectedMeal,
       foods: foodItems,

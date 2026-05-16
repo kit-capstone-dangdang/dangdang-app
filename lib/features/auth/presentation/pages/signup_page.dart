@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../data/repositories/firebase_auth_repository.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_label.dart';
 import '../widgets/auth_text_field.dart';
@@ -12,6 +13,8 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+
   final TextEditingController _nameController = TextEditingController();
 
   final TextEditingController _nicknameController = TextEditingController();
@@ -21,6 +24,42 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+
+  Future<void> _signUp() async {
+    final name = _nameController.text.trim();
+    final nickname = _nicknameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (name.isEmpty || nickname.isEmpty || email.isEmpty || password.isEmpty) {
+      _showMessage('모든 항목을 입력해 주세요.');
+      return;
+    }
+
+    try {
+      await _authRepository.signUp(
+        name: name,
+        nickname: nickname,
+        email: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      _showMessage('회원가입이 완료되었습니다.');
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+
+      _showMessage(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   void dispose() {
@@ -139,7 +178,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    AuthButton(text: '회원가입 완료', onPressed: () {}),
+                    AuthButton(text: '회원가입 완료', onPressed: _signUp),
                   ],
                 ),
               ),

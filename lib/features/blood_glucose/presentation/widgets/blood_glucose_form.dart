@@ -1,6 +1,7 @@
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BloodSugarForm extends StatefulWidget {
   final String title;
@@ -450,8 +451,7 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
                   height: 66,
                   child: ElevatedButton(
                     onPressed: () async {
-                      final bloodSugar =
-                          int.tryParse(sugarController.text);
+                      final bloodSugar = int.tryParse(sugarController.text);
 
                       if (bloodSugar == null) {
                         return;
@@ -467,12 +467,15 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
 
                       final record = BloodSugarRecord(
                         id: widget.initialRecord?.id ?? '',
+                        uid:
+                            widget.initialRecord?.uid ??
+                            FirebaseAuth.instance.currentUser?.uid ??
+                            '',
                         dateTime: dateTime,
                         bloodSugar: bloodSugar,
                         mealState: selectedType,
                         memo: memoController.text,
                       );
-
                       if (widget.initialRecord == null) {
                         await repository.createRecord(record);
                       } else {
