@@ -1,20 +1,17 @@
-import 'package:dangdang/features/blood_glucose/data/datasources/blood_sugar_dummy_data.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
-import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fl_chart/fl_chart.dart'; // 💡 fl_chart 추가
+import 'package:fl_chart/fl_chart.dart';
 import 'package:dangdang/core/widgets/common/custom_card.dart';
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
 import 'package:dangdang/core/widgets/common/state_views.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
-import '../../blood_glucose/domain/entities/blood_sugar_record.dart';
-import '../../blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_add_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_edit_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
+import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -25,6 +22,90 @@ class HomeDashboardPage extends StatefulWidget {
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
   bool _isLoading = false;
+  bool _isLoadingBloodSugar = true;
+
+  final FirebaseBloodSugarRepository _bloodSugarRepo =
+      FirebaseBloodSugarRepository();
+  BloodSugarRecord? _latestRecord;
+  List<BloodSugarRecord> _recentChartRecords = [];
+  List<FlSpot> _chartSpots = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeBloodSugarData();
+  }
+
+  Future<void> _loadHomeBloodSugarData() async {
+    try {
+      final records = await _bloodSugarRepo.getRecords();
+
+      if (records.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _latestRecord = null;
+            _recentChartRecords = [];
+            _chartSpots = [];
+            _isLoadingBloodSugar = false;
+          });
+        }
+        return;
+      }
+
+      var sortedDesc = List<BloodSugarRecord>.from(records);
+      sortedDesc.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
+      final latest = sortedDesc.first;
+
+      var recent = sortedDesc.take(7).toList();
+      recent.sort((a, b) => a.dateTime.compareTo(b.dateTime));
+
+      List<FlSpot> spots = [];
+      for (int i = 0; i < recent.length; i++) {
+        spots.add(FlSpot(i.toDouble(), recent[i].bloodSugar.toDouble()));
+      }
+
+      if (mounted) {
+        setState(() {
+          _latestRecord = latest;
+          _recentChartRecords = recent;
+          _chartSpots = spots;
+          _isLoadingBloodSugar = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingBloodSugar = false);
+      }
+    }
+  }
+
+  // 혈당 수치와 측정 타입에 따라 상태 텍스트를 반환하는 함수
+  String _getBloodSugarStatusText(int value, String measureType) {
+    if (measureType == '공복' || measureType == '식전') {
+      if (value < 100) return '정상 범위 내에 있습니다';
+      if (value < 126) return '공복혈당장애 주의가 필요해요';
+      return '혈당 관리가 필요해요';
+    } else {
+      if (value < 140) return '정상 범위 내에 있습니다';
+      if (value < 200) return '내당능장애 주의가 필요해요';
+      return '혈당 관리가 필요해요';
+    }
+  }
+
+  Color _getCardColor(int value, String measureType) {
+    if (measureType == '공복' || measureType == '식전') {
+      // 공복 기준
+      if (value < 100) return const Color(0xFF2F69FE); // 정상: 파란색 (기존 색상)
+      if (value < 126) return Colors.orangeAccent; // 주의(주의 단계): 노란/주황색
+      return Colors.redAccent; // 위험(당뇨 단계): 빨간색
+    } else {
+      // 식후 기준
+      if (value < 140) return const Color(0xFF2F69FE); // 정상: 파란색
+      if (value < 200) return Colors.orangeAccent; // 주의(주의 단계): 노란/주황색
+      return Colors.redAccent; // 위험(당뇨 단계): 빨간색
+    }
+  }
 
   Future<void> _pickImageAndAnalyze({
     required BuildContext context,
@@ -48,7 +129,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
       final mealRecord = await mealAiService.analyzeFoodImage(
         image: image,
-        mealType: '식사', // 기본값, 필요시 사용자 입력 받기
+        mealType: '식사',
         dateTime: DateTime.now(),
       );
 
@@ -82,7 +163,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         _isLoading = false;
       });
 
-      // 에러 처리: 스낵바로 에러 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('분석 중 오류가 발생했습니다: $e'),
@@ -189,25 +269,25 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     );
   }
 
-  List<BloodSugarRecord> get _sortedRecords {
-    var sorted = List<BloodSugarRecord>.from(dummyBloodSugarRecords);
-    sorted.sort((a, b) => a.dateTime.compareTo(b.dateTime));
-    return sorted;
-  }
-
-  List<FlSpot> get _chartSpots {
-    final records = _sortedRecords;
-    List<FlSpot> spots = [];
-    for (int i = 0; i < records.length; i++) {
-      spots.add(FlSpot(i.toDouble(), records[i].bloodSugar.toDouble()));
-    }
-    return spots;
-  }
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+
+    final latestRecord = _latestRecord;
+    final int currentValue = latestRecord?.bloodSugar ?? 0;
+    final String currentType = latestRecord?.mealState ?? '공복';
+
+    final Color cardBackgroundColor = latestRecord != null
+        ? _getCardColor(currentValue, currentType)
+        : const Color(0xFFF3F4F6);
+
+    final String displayValue = currentValue > 0
+        ? currentValue.toString()
+        : '-';
+    final String statusMessage = currentValue > 0
+        ? _getBloodSugarStatusText(currentValue, currentType)
+        : '아직 기록이 없습니다';
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -273,10 +353,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // 상단 혈당 수치 카드
                       CustomCard(
                         padding: const EdgeInsets.all(25),
                         borderRadius: 25,
-                        backgroundColor: const Color(0xFF2F69FE),
+                        backgroundColor: cardBackgroundColor,
                         showShadow: false,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +394,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  '105',
+                                  displayValue,
                                   style: textTheme.displayMedium?.copyWith(
                                     color: colorScheme.onPrimary,
                                     fontSize: 56,
@@ -332,7 +413,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              '✓ 정상 범위 내에 있습니다 (공복)',
+                              currentValue > 0
+                                  ? '✓ $statusMessage ($currentType)'
+                                  : '측정을 시작해보세요!',
                               style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onPrimary.withOpacity(0.7),
                               ),
@@ -341,19 +424,20 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ),
                       ),
                       const SizedBox(height: 25),
+
                       Row(
                         children: [
                           Expanded(
                             child: CustomCard(
-                              onTap: () {
-                                // 🚀 새 기록 추가 화면으로 연결!
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         const BloodSugarAddPage(),
-                                  ), // MaterialPageRoute
+                                  ),
                                 );
+                                _loadHomeBloodSugarData();
                               },
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -375,7 +459,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                               ),
                             ),
                           ),
-
                           const SizedBox(width: 20),
                           Expanded(
                             child: CustomCard(
@@ -405,6 +488,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ],
                       ),
                       const SizedBox(height: 35),
+
                       Column(
                         children: [
                           Row(
@@ -418,7 +502,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                               ),
                               TextButton(
                                 onPressed: () {
-                                  // 🚀 혈당 분석 화면으로 이동!
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -445,15 +528,21 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                           const SizedBox(height: 20),
                           CustomCard(
                             child: SizedBox(
-                              // 💡 대시보드 카드에 맞게 그래프 높이를 조금 조절했습니다
                               height: 150,
                               width: double.infinity,
                               child: Center(
-                                child: BloodGlucoseLineChart(
-                                  chartSpots: _chartSpots,
-                                  sortedRecords: _sortedRecords,
-                                  selectedIndex: 1, // 대시보드는 '주간' 기준
-                                ),
+                                child: _isLoadingBloodSugar
+                                    ? const CircularProgressIndicator()
+                                    : _recentChartRecords.isEmpty
+                                    ? const Text(
+                                        '아직 기록된 혈당이 없어요!',
+                                        style: TextStyle(color: Colors.grey),
+                                      )
+                                    : BloodGlucoseLineChart(
+                                        chartSpots: _chartSpots,
+                                        sortedRecords: _recentChartRecords,
+                                        selectedIndex: 1,
+                                      ),
                               ),
                             ),
                           ),
