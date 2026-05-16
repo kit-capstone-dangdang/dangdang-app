@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,6 +14,7 @@ import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
+import 'package:dangdang/features/profile/presentation/pages/my_page.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -24,6 +27,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   bool _isLoading = false;
   bool _isLoadingBloodSugar = true;
 
+  String _userName = '사용자';
+
   final FirebaseBloodSugarRepository _bloodSugarRepo =
       FirebaseBloodSugarRepository();
   BloodSugarRecord? _latestRecord;
@@ -33,7 +38,32 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   @override
   void initState() {
     super.initState();
+    _loadUserInfo();
     _loadHomeBloodSugarData();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    final data = snapshot.data();
+
+    if (!mounted) return;
+
+    setState(() {
+      _userName = data?['name']?.toString() ?? user.displayName ?? '사용자';
+    });
+  }
+
+  String get _userInitial {
+    if (_userName.isEmpty) return '';
+    return _userName.characters.first;
   }
 
   Future<void> _loadHomeBloodSugarData() async {
@@ -80,7 +110,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     }
   }
 
-  // 혈당 수치와 측정 타입에 따라 상태 텍스트를 반환하는 함수
   String _getBloodSugarStatusText(int value, String measureType) {
     if (measureType == '공복' || measureType == '식전') {
       if (value < 100) return '정상 범위 내에 있습니다';
@@ -95,15 +124,13 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   Color _getCardColor(int value, String measureType) {
     if (measureType == '공복' || measureType == '식전') {
-      // 공복 기준
-      if (value < 100) return const Color(0xFF2F69FE); // 정상: 파란색 (기존 색상)
-      if (value < 126) return Colors.orangeAccent; // 주의(주의 단계): 노란/주황색
-      return Colors.redAccent; // 위험(당뇨 단계): 빨간색
+      if (value < 100) return const Color(0xFF2F69FE);
+      if (value < 126) return Colors.orangeAccent;
+      return Colors.redAccent;
     } else {
-      // 식후 기준
-      if (value < 140) return const Color(0xFF2F69FE); // 정상: 파란색
-      if (value < 200) return Colors.orangeAccent; // 주의(주의 단계): 노란/주황색
-      return Colors.redAccent; // 위험(당뇨 단계): 빨간색
+      if (value < 140) return const Color(0xFF2F69FE);
+      if (value < 200) return Colors.orangeAccent;
+      return Colors.redAccent;
     }
   }
 
@@ -312,7 +339,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '안녕하세요, 김당뇨님!',
+                            '안녕하세요, $_userName님!',
                             style: textTheme.headlineMedium?.copyWith(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
@@ -330,14 +357,24 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ],
                       ),
                     ),
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: const Color(0xFFE8F0FE),
-                      child: Text(
-                        '김',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MyPage(),
+                          ),
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 25,
+                        backgroundColor: const Color(0xFFE8F0FE),
+                        child: Text(
+                          _userInitial,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -353,7 +390,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 상단 혈당 수치 카드
                       CustomCard(
                         padding: const EdgeInsets.all(25),
                         borderRadius: 25,
@@ -424,7 +460,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ),
                       ),
                       const SizedBox(height: 25),
-
                       Row(
                         children: [
                           Expanded(
@@ -488,7 +523,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ],
                       ),
                       const SizedBox(height: 35),
-
                       Column(
                         children: [
                           Row(
