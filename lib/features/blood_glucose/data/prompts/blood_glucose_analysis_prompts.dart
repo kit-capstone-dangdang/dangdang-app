@@ -1,13 +1,13 @@
-class BloodSugarAnalysisPrompts {
-  static String buildBloodSugarAnalysisPrompt({
-    required String bloodSugarRecordsJson,
+class BloodGlucoseAnalysisPrompts {
+  static String buildBloodGlucoseAnalysisPrompt({
+    required String bloodGlucoseRecordsJson,
   }) {
     return '''
 사용자의 실제 혈당 기록을 분석하는 건강 코치야.
 JSON만 반환해. 설명, 마크다운, 코드블록 금지.
 
 혈당 기록 JSON:
-$bloodSugarRecordsJson
+$bloodGlucoseRecordsJson
 
 형식:
 {
