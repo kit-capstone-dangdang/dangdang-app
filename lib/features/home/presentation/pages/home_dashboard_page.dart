@@ -8,10 +8,10 @@ import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/pages/blood_sugar_add_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
-import 'package:dangdang/features/blood_glucose/domain/repositories/firebase_blood_sugar_repository.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
+import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});

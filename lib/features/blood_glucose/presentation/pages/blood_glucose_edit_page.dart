@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
-import '../widgets/blood_sugar_form.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
+import '../widgets/blood_glucose_form.dart';
 
 class BloodSugarEditPage extends StatelessWidget {
   final BloodSugarRecord record;

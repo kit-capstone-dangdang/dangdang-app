@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/blood_sugar_form.dart';
+import '../widgets/blood_glucose_form.dart';
 
 class BloodSugarAddPage extends StatelessWidget {
   const BloodSugarAddPage({super.key});

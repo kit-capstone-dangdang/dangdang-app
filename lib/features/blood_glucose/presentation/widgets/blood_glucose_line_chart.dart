@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../domain/entities/blood_sugar_record.dart';
-import 'dart:math' as math;
+import '../../domain/entities/blood_glucose_record.dart';
 
 class BloodGlucoseLineChart extends StatelessWidget {
   final List<FlSpot> chartSpots;

@@ -5,12 +5,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
-import 'package:dangdang/features/blood_glucose/domain/repositories/firebase_blood_sugar_repository.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
+import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/ai_report_card.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_stat_card.dart';
-import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/data/services/blood_glucose_ai_service.dart';
 
 class BloodSugarAnalysisScreen extends StatefulWidget {

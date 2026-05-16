@@ -1,6 +1,6 @@
 import 'package:dangdang/core/widgets/common/custom_card.dart';
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:flutter/material.dart';
 
 class BloodSugarRecordCard extends StatelessWidget {

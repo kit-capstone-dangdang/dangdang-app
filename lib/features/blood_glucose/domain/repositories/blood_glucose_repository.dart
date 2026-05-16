@@ -1,4 +1,4 @@
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 
 abstract class BloodSugarRepository {
   Future<void> createRecord(
