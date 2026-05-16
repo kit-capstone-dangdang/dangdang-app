@@ -14,11 +14,9 @@ class BloodGlucoseLineChart extends StatelessWidget {
     required this.selectedIndex,
   });
 
-  // 💡 탭(일/주/월)에 따라 X축 라벨 글씨를 다르게 그려주는 함수
   Widget _bottomTitleWidgets(double value, TitleMeta meta) {
     final int index = value.toInt();
 
-    // 인덱스 범위 초과 방지
     if (index < 0 || index >= sortedRecords.length) {
       return const Text('');
     }
@@ -27,22 +25,19 @@ class BloodGlucoseLineChart extends StatelessWidget {
     String text = '';
 
     if (selectedIndex == 0) {
-      // 일간: 시간:분 표시 (예: 14:30)
       text = '${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } else if (selectedIndex == 1) {
-      // 주간: 월/일 표시 (예: 3/25)
       text = '${date.month}/${date.day}';
     } else {
-      // 💡 [수정] 월간: N월 표시 (예: 1월, 2월, 3월)
       text = '${date.month}월';
     }
 
     return SideTitleWidget(
       meta: meta,
-      space: 8, // 차트와 라벨 사이의 간격
+      space: 6,
       child: Text(
         text,
-        style: const TextStyle(color: Colors.grey, fontSize: 12),
+        style: const TextStyle(color: Colors.grey, fontSize: 11),
       ),
     );
   }
@@ -50,8 +45,8 @@ class BloodGlucoseLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 250,
-      padding: const EdgeInsets.only(right: 20, left: 0, top: 24, bottom: 10),
+      height: 300,
+      padding: const EdgeInsets.only(right: 30, left: 0, top: 24, bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -62,12 +57,12 @@ class BloodGlucoseLineChart extends StatelessWidget {
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            horizontalInterval: 30,
+            horizontalInterval: 40,
             getDrawingHorizontalLine: (value) {
               return FlLine(
                 color: Colors.grey[300],
                 strokeWidth: 1,
-                dashArray: [5, 5], // 💡 가로선을 점선으로 만들어 훨씬 깔끔하게 표시
+                dashArray: [5, 5],
               );
             },
           ),
@@ -82,7 +77,7 @@ class BloodGlucoseLineChart extends StatelessWidget {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 30,
+                reservedSize: 28,
                 interval: 1,
                 getTitlesWidget: _bottomTitleWidgets,
               ),
@@ -90,12 +85,16 @@ class BloodGlucoseLineChart extends StatelessWidget {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                interval: 30,
-                reservedSize: 40,
+                interval: 50,
+                reservedSize: 42,
                 getTitlesWidget: (value, meta) {
-                  return Text(
-                    '${value.toInt()}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  return SideTitleWidget(
+                    meta: meta,
+                    space: 4,
+                    child: Text(
+                      '${value.toInt()}',
+                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
                   );
                 },
               ),
@@ -117,7 +116,7 @@ class BloodGlucoseLineChart extends StatelessWidget {
             ),
           ],
           minY: 60,
-          maxY: 200, // 혈당 수치에 따라 자동 조절하려면 로직 추가 가능
+          maxY: 250,
         ),
       ),
     );

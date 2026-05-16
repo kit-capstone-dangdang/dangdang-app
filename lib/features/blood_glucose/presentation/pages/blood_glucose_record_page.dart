@@ -18,6 +18,8 @@ import 'package:dangdang/features/blood_glucose/data/services/blood_glucose_ai_s
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 
+final ValueNotifier<int> bloodSugarSyncNotifier = ValueNotifier(0);
+
 enum _BloodSugarRecordRange {
   all('전체 기록'),
   today('오늘 기록'),
@@ -57,27 +59,39 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
   void initState() {
     super.initState();
     loadRecords();
+    bloodSugarSyncNotifier.addListener(_syncData);
   }
 
   @override
   void dispose() {
+    bloodSugarSyncNotifier.removeListener(_syncData);
     _overlayEntry?.remove();
     super.dispose();
   }
 
+  void _syncData() {
+    if (mounted) loadRecords();
+  }
+
   Future<void> loadRecords() async {
-    setState(() => isLoading = true);
+    if (mounted) {
+      setState(() => isLoading = true);
+    }
 
     try {
       final data = await repository.getRecords();
       data.sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
-      setState(() {
-        records = data;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          records = data;
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -313,7 +327,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
             context,
             MaterialPageRoute(builder: (_) => const BloodSugarAddPage()),
           );
-          await loadRecords();
+          bloodSugarSyncNotifier.value++;
         },
         child: const Icon(Icons.add, color: Colors.white, size: 34),
       ),
@@ -351,13 +365,14 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                     size: 58,
                     backgroundColor: const Color(0xFFF3F4F6),
                     iconColor: const Color(0xFF6B7280),
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => const BloodSugarAnalysisScreen(),
                         ),
                       );
+                      bloodSugarSyncNotifier.value++;
                     },
                   ),
                 ],
@@ -472,7 +487,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                           builder: (_) => BloodGlucoseEditPage(record: record),
                         ),
                       );
-                      await loadRecords();
+                      bloodSugarSyncNotifier.value++;
                     },
                     onDelete: () => _handleDelete(record),
                   ),
@@ -527,7 +542,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
             context,
           ).showSnackBar(const SnackBar(content: Text('성공적으로 삭제되었습니다.')));
         }
-        await loadRecords();
+        bloodSugarSyncNotifier.value++;
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

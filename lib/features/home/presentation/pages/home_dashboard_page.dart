@@ -15,6 +15,7 @@ import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_gluco
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:dangdang/features/profile/presentation/pages/my_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -40,6 +41,17 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     super.initState();
     _loadUserInfo();
     _loadHomeBloodSugarData();
+    bloodSugarSyncNotifier.addListener(_syncData);
+  }
+
+  @override
+  void dispose() {
+    bloodSugarSyncNotifier.removeListener(_syncData);
+    super.dispose();
+  }
+
+  void _syncData() {
+    if (mounted) _loadHomeBloodSugarData();
   }
 
   Future<void> _loadUserInfo() async {
@@ -67,6 +79,12 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   }
 
   Future<void> _loadHomeBloodSugarData() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingBloodSugar = true;
+      });
+    }
+
     try {
       final records = await _bloodSugarRepo.getRecords();
 
@@ -358,13 +376,15 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const MyPage(),
                           ),
                         );
+                        await _loadUserInfo();
+                        bloodSugarSyncNotifier.value++;
                       },
                       child: CircleAvatar(
                         radius: 25,
@@ -407,13 +427,13 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF5B8EFF),
+                                    color: colorScheme.onPrimary,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
                                     '최근 혈당',
                                     style: textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.onPrimary,
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ),
@@ -472,7 +492,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                                         const BloodSugarAddPage(),
                                   ),
                                 );
-                                _loadHomeBloodSugarData();
+                                bloodSugarSyncNotifier.value++;
                               },
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -535,14 +555,15 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () {
-                                  Navigator.push(
+                                onPressed: () async {
+                                  await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           const BloodSugarAnalysisScreen(),
                                     ),
                                   );
+                                  bloodSugarSyncNotifier.value++;
                                 },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
@@ -562,7 +583,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                           const SizedBox(height: 20),
                           CustomCard(
                             child: SizedBox(
-                              height: 150,
+                              height: 250,
                               width: double.infinity,
                               child: Center(
                                 child: _isLoadingBloodSugar
