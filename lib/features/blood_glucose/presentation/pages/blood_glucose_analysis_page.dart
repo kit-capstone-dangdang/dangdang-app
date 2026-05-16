@@ -1,14 +1,11 @@
 import 'dart:math' as math;
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
-import 'package:dangdang/features/blood_glucose/presentation/widgets/ai_report_card.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_stat_card.dart';
-import 'package:dangdang/features/blood_glucose/data/services/blood_glucose_ai_service.dart';
 
 class BloodSugarAnalysisScreen extends StatefulWidget {
   const BloodSugarAnalysisScreen({super.key});
@@ -20,13 +17,11 @@ class BloodSugarAnalysisScreen extends StatefulWidget {
 
 class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
   int _selectedIndex = 1;
-  late final BloodGlucoseAIService _bloodGlucoseAIService;
 
   final FirebaseBloodSugarRepository _repository =
       FirebaseBloodSugarRepository();
-  late Future<String> _reportFuture;
 
-  List<BloodSugarRecord> _realRecords = [];
+  List<BloodGlucoseRecord> _realRecords = [];
   bool _isLoading = true;
 
   String get _uid => FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -34,42 +29,23 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
   @override
   void initState() {
     super.initState();
-    _bloodGlucoseAIService = BloodGlucoseAIService();
-
-    _reportFuture = _loadRealDataAndGetReport();
+    _loadData();
   }
 
-  Future<String> _loadRealDataAndGetReport() async {
+  Future<void> _loadData() async {
     try {
       final records = await _repository.getRecords();
 
-      setState(() {
-        _realRecords = records;
-        _isLoading = false;
-      });
-
-      if (records.isEmpty) {
-        return "아직 기록된 혈당 데이터가 없어요. 첫 혈당을 기록하고 AI 분석을 받아보세요!";
+      if (mounted) {
+        setState(() {
+          _realRecords = records;
+          _isLoading = false;
+        });
       }
-
-      final List<Map<String, dynamic>> recordMaps = records
-          .map(
-            (e) => {
-              'dateTime': e.dateTime.toString(),
-              'bloodSugar': e.bloodSugar,
-              'mealState': e.mealState,
-            },
-          )
-          .toList();
-
-      final String recordsJson = jsonEncode(recordMaps);
-
-      return await _bloodGlucoseAIService.getBloodGlucoseReportText(
-        recordsJson,
-      );
     } catch (e) {
-      setState(() => _isLoading = false);
-      return "데이터를 분석하는 중 오류가 발생했습니다: $e";
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -80,7 +56,7 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
         .reduce((a, b) => a.isAfter(b) ? a : b);
   }
 
-  List<BloodSugarRecord> get _processedRecords {
+  List<BloodGlucoseRecord> get _processedRecords {
     final target = _targetDate;
 
     if (_selectedIndex == 0) {
@@ -107,11 +83,11 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
         dailyMap.putIfAbsent(r.dateTime.day, () => []).add(r.bloodSugar);
       }
 
-      List<BloodSugarRecord> averaged = [];
+      List<BloodGlucoseRecord> averaged = [];
       dailyMap.forEach((day, values) {
         int avg = (values.reduce((a, b) => a + b) / values.length).round();
         averaged.add(
-          BloodSugarRecord(
+          BloodGlucoseRecord(
             id: '',
             uid: _uid,
             dateTime: DateTime(target.year, target.month, day),
@@ -134,11 +110,11 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
         monthMap.putIfAbsent(r.dateTime.month, () => []).add(r.bloodSugar);
       }
 
-      List<BloodSugarRecord> averaged = [];
+      List<BloodGlucoseRecord> averaged = [];
       monthMap.forEach((month, values) {
         int avg = (values.reduce((a, b) => a + b) / values.length).round();
         averaged.add(
-          BloodSugarRecord(
+          BloodGlucoseRecord(
             id: '',
             uid: _uid,
             dateTime: DateTime(target.year, month, 1),
@@ -231,27 +207,6 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
                         ),
                       ),
                     ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  FutureBuilder<String>(
-                    future: _reportFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const AIReportCard(
-                          reportText: '당당하게 AI가 혈당 기록을 분석하고 있어요...',
-                        );
-                      }
-                      if (snapshot.hasError) {
-                        return const AIReportCard(
-                          reportText: '리포트 생성 중 문제가 발생했어요. 나중에 다시 시도해주세요.',
-                        );
-                      }
-                      return AIReportCard(
-                        reportText: snapshot.data ?? '분석 결과를 가져올 수 없습니다.',
-                      );
-                    },
                   ),
                 ],
               ),

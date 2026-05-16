@@ -3,12 +3,12 @@ import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class BloodSugarForm extends StatefulWidget {
+class BloodGlucoseForm extends StatefulWidget {
   final String title;
   final String buttonText;
-  final BloodSugarRecord? initialRecord;
+  final BloodGlucoseRecord? initialRecord;
 
-  const BloodSugarForm({
+  const BloodGlucoseForm({
     super.key,
     required this.title,
     required this.buttonText,
@@ -16,10 +16,10 @@ class BloodSugarForm extends StatefulWidget {
   });
 
   @override
-  State<BloodSugarForm> createState() => _BloodSugarFormState();
+  State<BloodGlucoseForm> createState() => _BloodSugarFormState();
 }
 
-class _BloodSugarFormState extends State<BloodSugarForm> {
+class _BloodSugarFormState extends State<BloodGlucoseForm> {
   final TextEditingController sugarController = TextEditingController();
   final TextEditingController memoController = TextEditingController();
 
@@ -465,7 +465,7 @@ class _BloodSugarFormState extends State<BloodSugarForm> {
                         selectedTime.minute,
                       );
 
-                      final record = BloodSugarRecord(
+                      final record = BloodGlucoseRecord(
                         id: widget.initialRecord?.id ?? '',
                         uid:
                             widget.initialRecord?.uid ??

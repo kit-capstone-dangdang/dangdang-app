@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:dangdang/app/navigation/main_shell.dart';
 import 'package:dangdang/core/utils/parsers/value_parser.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
@@ -251,6 +252,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
           mealRecord,
           oldImageUrl: widget.originalRecord!.imageUrl,
         );
+
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -258,6 +260,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
         }
       } else {
         await _mealRepository.createMeal(mealRecord);
+
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -266,9 +269,15 @@ class _FoodEditPageState extends State<FoodEditPage> {
       }
 
       if (!mounted) return;
-      Navigator.pop(context, true);
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainShell(initialIndex: 2)),
+        (route) => false,
+      );
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('저장 중 오류가 발생했습니다: $e'),

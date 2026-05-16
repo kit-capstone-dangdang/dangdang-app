@@ -5,14 +5,16 @@ import 'package:dangdang/features/home/presentation/pages/home_dashboard_page.da
 import 'package:dangdang/features/meal/presentation/pages/meal_record_page.dart';
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  final int initialIndex;
+
+  const MainShell({super.key, this.initialIndex = 0});
 
   @override
   State<MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends State<MainShell> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
   final List<Widget> _screens = [
     const HomeDashboardPage(),
@@ -20,6 +22,12 @@ class _MainShellState extends State<MainShell> {
     const MealRecordPage(),
     const Center(child: Text('AI 챗 화면')),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   void _onItemTapped(int index) {
     setState(() {

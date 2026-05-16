@@ -4,7 +4,7 @@ import '../../domain/entities/blood_glucose_record.dart';
 
 class BloodGlucoseLineChart extends StatelessWidget {
   final List<FlSpot> chartSpots;
-  final List<BloodSugarRecord> sortedRecords;
+  final List<BloodGlucoseRecord> sortedRecords;
   final int selectedIndex;
 
   const BloodGlucoseLineChart({

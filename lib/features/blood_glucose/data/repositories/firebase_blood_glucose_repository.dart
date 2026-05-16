@@ -8,6 +8,10 @@ class FirebaseBloodSugarRepository implements BloodSugarRepository {
     'blood_glucose_record',
   );
 
+  final _reportCollection = FirebaseFirestore.instance.collection(
+    'blood_glucose_reports',
+  );
+
   String get _uid {
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
@@ -19,29 +23,48 @@ class FirebaseBloodSugarRepository implements BloodSugarRepository {
   }
 
   @override
-  Future<void> createRecord(BloodSugarRecord record) async {
+  Future<void> createRecord(BloodGlucoseRecord record) async {
     await _collection.add(record.toJson());
   }
 
   @override
-  Future<List<BloodSugarRecord>> getRecords() async {
+  Future<List<BloodGlucoseRecord>> getRecords() async {
     final snapshot = await _collection
         .where('uid', isEqualTo: _uid)
         .orderBy('dateTime', descending: true)
         .get();
 
     return snapshot.docs.map((doc) {
-      return BloodSugarRecord.fromJson(doc.id, doc.data());
+      return BloodGlucoseRecord.fromJson(doc.id, doc.data());
     }).toList();
   }
 
   @override
-  Future<void> updateRecord(BloodSugarRecord record) async {
+  Future<void> updateRecord(BloodGlucoseRecord record) async {
     await _collection.doc(record.id).update(record.toJson());
   }
 
   @override
   Future<void> deleteRecord(String id) async {
     await _collection.doc(id).delete();
+  }
+
+  @override
+  Future<void> saveAiReport(String reportText) async {
+    await _reportCollection.doc(_uid).set({
+      'reportText': reportText,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  @override
+  Future<String?> getLatestAiReport() async {
+    final doc = await _reportCollection.doc(_uid).get();
+
+    if (doc.exists && doc.data() != null) {
+      return doc.data()!['reportText'] as String?;
+    }
+
+    return null;
   }
 }

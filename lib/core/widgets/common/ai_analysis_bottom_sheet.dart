@@ -1,39 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
-import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
-import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 import 'package:dangdang/core/widgets/common/state_views.dart';
 
-class AiAnalysisBottomSheet extends StatefulWidget {
-  final List<MealRecord> records;
+class AiAnalysisBottomSheet<T> extends StatefulWidget {
+  final Future<T> analysisFuture;
+  final String title;
   final String subtitle;
+  final Widget Function(BuildContext context, T data) analysisBuilder;
+  final String loadingMessage;
 
   const AiAnalysisBottomSheet({
     super.key,
-    required this.records,
+    required this.analysisFuture,
+    required this.title,
     required this.subtitle,
+    required this.analysisBuilder,
+    this.loadingMessage = 'AI 분석중입니다...',
   });
 
   @override
-  State<AiAnalysisBottomSheet> createState() => _AiAnalysisBottomSheetState();
+  State<AiAnalysisBottomSheet<T>> createState() =>
+      _AiAnalysisBottomSheetState<T>();
 }
 
-class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
-  late Future<MealHabitAnalysisResult> _analysisFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAnalysis();
-  }
-
-  void _loadAnalysis() {
-    _analysisFuture = MealAiService().analyzeMealHabits(
-      records: widget.records,
-      scopeLabel: widget.subtitle,
-    );
-  }
-
+class _AiAnalysisBottomSheetState<T> extends State<AiAnalysisBottomSheet<T>> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -60,8 +49,8 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
               ),
               const SizedBox(height: 24),
               Expanded(
-                child: FutureBuilder<MealHabitAnalysisResult>(
-                  future: _analysisFuture,
+                child: FutureBuilder<T>(
+                  future: widget.analysisFuture,
                   builder: (context, snapshot) {
                     return ListView(
                       controller: controller,
@@ -69,8 +58,8 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
                       children: [
                         _buildAnalysisHeader(
                           context,
+                          title: widget.title,
                           subtitle: widget.subtitle,
-                          recordCount: widget.records.length,
                         ),
                         const SizedBox(height: 32),
                         if (snapshot.connectionState != ConnectionState.done)
@@ -82,7 +71,7 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
                                 const LoadingView(),
                                 const SizedBox(height: 20),
                                 Text(
-                                  'AI 식단 분석중입니다...',
+                                  widget.loadingMessage,
                                   style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(
                                         fontWeight: FontWeight.bold,
@@ -96,20 +85,11 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
                           ErrorMessageView(
                             errorMessage: '분석 결과를 불러오지 못했어요.',
                             onRetry: () {
-                              setState(() {
-                                _loadAnalysis();
-                              });
+                              if (mounted) setState(() {});
                             },
                           )
-                        else
-                          _buildAnalysisSections(
-                            context,
-                            snapshot.data ??
-                                const MealHabitAnalysisResult(
-                                  patterns: [],
-                                  recommendations: [],
-                                ),
-                          ),
+                        else if (snapshot.hasData)
+                          widget.analysisBuilder(context, snapshot.data as T),
                         if (snapshot.connectionState == ConnectionState.done &&
                             !snapshot.hasError) ...[
                           const SizedBox(height: 32),
@@ -168,8 +148,8 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
 
   Widget _buildAnalysisHeader(
     BuildContext context, {
+    required String title,
     required String subtitle,
-    required int recordCount,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +173,7 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'AI 식단 건강 리포트',
+                title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF111827),
@@ -209,83 +189,6 @@ class _AiAnalysisBottomSheetState extends State<AiAnalysisBottomSheet> {
                 ),
               ),
             ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAnalysisSections(
-    BuildContext context,
-    MealHabitAnalysisResult result,
-  ) {
-    final patterns = result.patterns.isEmpty
-        ? const ['기록된 식단 수가 적어 뚜렷한 패턴을 찾지 못했어요.']
-        : result.patterns;
-    final recommendations = result.recommendations.isEmpty
-        ? const ['기록이 더 쌓이면 더 구체적인 식단 추천을 드릴 수 있어요.']
-        : result.recommendations;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.trending_up_rounded, color: Color(0xFF5A46F5)),
-            const SizedBox(width: 8),
-            Text(
-              '식습관 패턴',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF111827),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        ...patterns.map(
-          (pattern) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: AiAnalysisCard(
-              text: pattern,
-              icon: Icons.circle,
-              iconColor: const Color(0xFFB180FA),
-              backgroundColor: const Color(0xFFF6F0FF),
-              borderColor: const Color(0xFFEFE6FF),
-              textColor: const Color(0xFF34177A),
-              iconSize: 8,
-              isPattern: true,
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            const Icon(Icons.restaurant_outlined, color: Color(0xFF3CB043)),
-            const SizedBox(width: 8),
-            Text(
-              'AI 추천',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF111827),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        ...recommendations.map(
-          (recommendation) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: AiAnalysisCard(
-              text: recommendation,
-              icon: Icons.check_circle_outline_rounded,
-              iconColor: const Color(0xFF4CB158),
-              backgroundColor: const Color(0xFFF9FFFA),
-              borderColor: const Color(0xFFE5F7E8),
-              textColor: const Color(0xFF1B4021),
-              iconSize: 22,
-              isPattern: false,
-            ),
           ),
         ),
       ],

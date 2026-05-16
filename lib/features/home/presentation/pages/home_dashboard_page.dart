@@ -31,8 +31,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   final FirebaseBloodSugarRepository _bloodSugarRepo =
       FirebaseBloodSugarRepository();
-  BloodSugarRecord? _latestRecord;
-  List<BloodSugarRecord> _recentChartRecords = [];
+  BloodGlucoseRecord? _latestRecord;
+  List<BloodGlucoseRecord> _recentChartRecords = [];
   List<FlSpot> _chartSpots = [];
 
   @override
@@ -82,7 +82,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         return;
       }
 
-      var sortedDesc = List<BloodSugarRecord>.from(records);
+      var sortedDesc = List<BloodGlucoseRecord>.from(records);
       sortedDesc.sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
       final latest = sortedDesc.first;

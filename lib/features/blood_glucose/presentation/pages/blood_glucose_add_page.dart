@@ -6,9 +6,6 @@ class BloodSugarAddPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const BloodSugarForm(
-      title: '새 기록 추가',
-      buttonText: '기록 저장하기',
-    );
+    return const BloodGlucoseForm(title: '새 기록 추가', buttonText: '기록 저장하기');
   }
 }
