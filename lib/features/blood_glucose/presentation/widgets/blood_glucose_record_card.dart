@@ -1,6 +1,6 @@
 import 'package:dangdang/core/widgets/common/custom_card.dart';
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_sugar_record.dart';
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:flutter/material.dart';
 
 class BloodSugarRecordCard extends StatelessWidget {
@@ -22,16 +22,15 @@ class BloodSugarRecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isHigh = record.bloodSugar >= 140;
-    final valueColor = isHigh ? Colors.red : const Color(0xFF2962FF);
-    final bgColor = isHigh ? const Color(0xFFFFF2F2) : const Color(0xFFF2F5FF);
+    final Color valueColor = Theme.of(context).primaryColor;
+
+    final Color bgColor = valueColor.withOpacity(0.08);
 
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       borderRadius: 28,
       child: Row(
         children: [
-          /// 혈당 수치
           Container(
             width: 64,
             height: 64,
@@ -64,7 +63,6 @@ class BloodSugarRecordCard extends StatelessWidget {
 
           const SizedBox(width: 18),
 
-          /// 텍스트
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +93,6 @@ class BloodSugarRecordCard extends StatelessWidget {
             ),
           ),
 
-          /// 아이콘
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
