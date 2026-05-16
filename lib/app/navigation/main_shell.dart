@@ -1,5 +1,4 @@
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dangdang/core/widgets/common/custom_bottom_navigation_bar.dart';
 import 'package:dangdang/features/home/presentation/pages/home_dashboard_page.dart';
@@ -15,18 +14,11 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
-  late final List<Widget> _screens = [
+  final List<Widget> _screens = [
     const HomeDashboardPage(),
     const BloodSugarRecordPage(),
     const MealRecordPage(),
-    Center(
-      child: ElevatedButton(
-        onPressed: () async {
-          await FirebaseAuth.instance.signOut();
-        },
-        child: const Text('로그아웃'),
-      ),
-    ),
+    const Center(child: Text('AI 챗 화면')),
   ];
 
   void _onItemTapped(int index) {
