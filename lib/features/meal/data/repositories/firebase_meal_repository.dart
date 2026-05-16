@@ -1,38 +1,51 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
 import 'package:dangdang/features/meal/domain/repositories/meal_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseMealRepository implements MealRepository {
   final _collection = FirebaseFirestore.instance.collection('meal_record');
-  final _storage = FirebaseStorage.instance; // 추가
+  final _storage = FirebaseStorage.instance;
 
-  /// CREATE
+  String get _uid {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      throw Exception('로그인이 필요합니다.');
+    }
+
+    return uid;
+  }
+
   @override
   Future<void> createMeal(MealRecord meal) async {
     await _collection.add(meal.toJson());
   }
 
-  /// READ (한 번 조회)
   @override
   Future<List<MealRecord>> getMeals() async {
-    final snapshot = await _collection.get();
+    final snapshot = await _collection
+        .where('uid', isEqualTo: _uid)
+        .orderBy('dateTime', descending: true)
+        .get();
 
     return snapshot.docs
         .map((doc) => MealRecord.fromJson(doc.id, doc.data()))
         .toList();
   }
 
-  /// READ STREAM (실시간 조회) 추가
   @override
   Stream<List<MealRecord>> watchMeals() {
-    return _collection.orderBy('dateTime', descending: true).snapshots().map((
-      snapshot,
-    ) {
-      return snapshot.docs
-          .map((doc) => MealRecord.fromJson(doc.id, doc.data()))
-          .toList();
-    });
+    return _collection
+        .where('uid', isEqualTo: _uid)
+        .orderBy('dateTime', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => MealRecord.fromJson(doc.id, doc.data()))
+              .toList();
+        });
   }
 
   @override
@@ -43,7 +56,7 @@ class FirebaseMealRepository implements MealRepository {
       }
 
       final data = snapshot.data();
-      if (data == null) {
+      if (data == null || data['uid'] != _uid) {
         return null;
       }
 
@@ -51,13 +64,10 @@ class FirebaseMealRepository implements MealRepository {
     });
   }
 
-  /// UPDATE
   @override
   Future<void> updateMeal(MealRecord meal, {String? oldImageUrl}) async {
-    // 1. 파이어스토어 데이터 업데이트
     await _collection.doc(meal.id).update(meal.toJson());
 
-    // 2. 이미지가 교체되었다면 스토리지에서 기존 이미지 삭제
     if (oldImageUrl != null &&
         oldImageUrl.isNotEmpty &&
         oldImageUrl != meal.imageUrl) {
@@ -71,27 +81,22 @@ class FirebaseMealRepository implements MealRepository {
     }
   }
 
-  /// DELETE
   @override
   Future<void> deleteMeal(String id, {String? imageUrl}) async {
     try {
-      // 1. 파이어스토어 문서 삭제
       await _collection.doc(id).delete();
 
-      // 2. 파이어베이스 스토리지 이미지 삭제 (imageUrl이 존재하는 경우)
       if (imageUrl != null && imageUrl.isNotEmpty) {
         try {
-          // 다운로드 URL을 이용해 스토리지 참조(reference)를 가져와서 삭제
           final storageRef = _storage.refFromURL(imageUrl);
           await storageRef.delete();
         } catch (e) {
-          // 이미지가 이미 삭제되었거나 경로를 찾을 수 없는 경우의 예외 처리
           print('스토리지 이미지 삭제 실패 (무시됨): $e');
         }
       }
     } catch (e) {
       print('식단 삭제 실패: $e');
-      rethrow; // UI 쪽에 에러를 던져서 스낵바를 띄울 수 있게 함
+      rethrow;
     }
   }
 }

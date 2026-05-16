@@ -1,10 +1,8 @@
-// blood_glucose_analysis_page.dart
-
 import 'dart:math' as math;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/ai_report_card.dart';
@@ -30,6 +28,8 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
 
   List<BloodSugarRecord> _realRecords = [];
   bool _isLoading = true;
+
+  String get _uid => FirebaseAuth.instance.currentUser?.uid ?? '';
 
   @override
   void initState() {
@@ -112,11 +112,12 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
         int avg = (values.reduce((a, b) => a + b) / values.length).round();
         averaged.add(
           BloodSugarRecord(
+            id: '',
+            uid: _uid,
             dateTime: DateTime(target.year, target.month, day),
             bloodSugar: avg,
             mealState: '평균',
             memo: '',
-            id: '',
           ),
         );
       });
@@ -138,11 +139,12 @@ class _BloodSugarAnalysisScreenState extends State<BloodSugarAnalysisScreen> {
         int avg = (values.reduce((a, b) => a + b) / values.length).round();
         averaged.add(
           BloodSugarRecord(
+            id: '',
+            uid: _uid,
             dateTime: DateTime(target.year, month, 1),
             bloodSugar: avg,
             mealState: '평균',
             memo: '',
-            id: '',
           ),
         );
       });
