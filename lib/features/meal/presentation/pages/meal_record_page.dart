@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dangdang/core/widgets/common/state_views.dart';
+import 'package:dangdang/core/widgets/common/ai_analysis_bottom_sheet.dart';
+import 'package:dangdang/core/widgets/filter/ai_analysis_button.dart';
+import 'package:dangdang/core/widgets/filter/record_category_tabs.dart';
+import 'package:dangdang/core/widgets/filter/record_range_dropdown.dart';
+import 'package:dangdang/core/widgets/filter/record_range_filter_card.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
@@ -8,9 +13,9 @@ import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
 import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';
 import 'package:dangdang/features/meal/presentation/pages/meal_analysis_result_page.dart';
+import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:dangdang/features/meal/presentation/widgets/meal_record_card.dart';
-import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_bottom_sheet.dart';
 
 class MealRecordPage extends StatefulWidget {
   const MealRecordPage({super.key});
@@ -53,33 +58,6 @@ class _MealRecordPageState extends State<MealRecordPage> {
     return (record.totalNutrition['calories'] ?? 0).round();
   }
 
-  String _normalizeMealType(String mealType) {
-    final normalized = mealType.trim().toLowerCase();
-
-    if (normalized.contains('아침') ||
-        normalized.contains('조식') ||
-        normalized.contains('breakfast')) {
-      return '아침';
-    }
-    if (normalized.contains('점심') ||
-        normalized.contains('중식') ||
-        normalized.contains('lunch')) {
-      return '점심';
-    }
-    if (normalized.contains('저녁') ||
-        normalized.contains('석식') ||
-        normalized.contains('dinner')) {
-      return '저녁';
-    }
-    if (normalized.contains('야식') ||
-        normalized.contains('snack') ||
-        normalized.contains('night')) {
-      return '야식';
-    }
-
-    return mealType.trim();
-  }
-
   bool _matchesSelectedRange(DateTime dateTime) {
     if (_selectedRange == _MealRecordRange.all) {
       return true;
@@ -112,24 +90,14 @@ class _MealRecordPageState extends State<MealRecordPage> {
     return records.where((record) {
       final matchesRange = _matchesSelectedRange(record.dateTime);
       final matchesMeal =
-          _selectedMealFilter == '전체' ||
-          _normalizeMealType(record.mealType) == _selectedMealFilter ||
-          record.mealType == _selectedMealFilter;
+          _selectedMealFilter == '전체' || record.mealType == _selectedMealFilter;
 
       return matchesRange && matchesMeal;
     }).toList();
   }
 
   String _analysisSubtitle() {
-    if (_selectedRange == _MealRecordRange.all && _selectedMealFilter == '전체') {
-      return '전체 기간 식사 패턴 분석';
-    }
-
-    if (_selectedMealFilter == '전체') {
-      return '${_selectedRange.label} 식사 패턴 분석';
-    }
-
-    return '${_selectedRange.label} · $_selectedMealFilter 패턴 분석';
+    return '필터: ${_selectedRange.label} · $_selectedMealFilter';
   }
 
   void _showEmptyAnalysisSnackBar() {
@@ -138,7 +106,7 @@ class _MealRecordPageState extends State<MealRecordPage> {
     ).showSnackBar(const SnackBar(content: Text('분석할 식단 기록이 아직 없어요.')));
   }
 
-  Future<void> _showAiAnalysisBottomSheet(List<MealRecord> records) async {
+  void _showAiAnalysisBottomSheet(List<MealRecord> records) {
     if (records.isEmpty) {
       _showEmptyAnalysisSnackBar();
       return;
@@ -146,12 +114,99 @@ class _MealRecordPageState extends State<MealRecordPage> {
 
     final subtitle = _analysisSubtitle();
 
-    await showModalBottomSheet<void>(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return AiAnalysisBottomSheet(records: records, subtitle: subtitle);
+        return AiAnalysisBottomSheet<dynamic>(
+          title: 'AI 식단 건강 리포트',
+          subtitle: subtitle,
+          loadingMessage: 'AI 식단 분석중입니다...',
+          analysisFuture: MealAiService().analyzeMealHabits(
+            records: records,
+            scopeLabel: subtitle,
+          ),
+          analysisBuilder: (context, result) {
+            final patterns = result.patterns.isEmpty
+                ? const ['기록된 식단 수가 적어 뚜렷한 패턴을 찾지 못했어요.']
+                : result.patterns;
+            final recommendations = result.recommendations.isEmpty
+                ? const ['기록이 더 쌓이면 더 구체적인 식단 추천을 드릴 수 있어요.']
+                : result.recommendations;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.trending_up_rounded,
+                      color: Color(0xFF5A46F5),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '식습관 패턴',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...patterns.map(
+                  (pattern) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: AiAnalysisCard(
+                      text: pattern,
+                      icon: Icons.circle,
+                      iconColor: const Color(0xFFB180FA),
+                      backgroundColor: const Color(0xFFF6F0FF),
+                      borderColor: const Color(0xFFEFE6FF),
+                      textColor: const Color(0xFF34177A),
+                      iconSize: 8,
+                      isPattern: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.restaurant_outlined,
+                      color: Color(0xFF3CB043),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'AI 추천',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...recommendations.map(
+                  (recommendation) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: AiAnalysisCard(
+                      text: recommendation,
+                      icon: Icons.check_circle_outline_rounded,
+                      iconColor: const Color(0xFF4CB158),
+                      backgroundColor: const Color(0xFFF9FFFA),
+                      borderColor: const Color(0xFFE5F7E8),
+                      textColor: const Color(0xFF1B4021),
+                      iconSize: 22,
+                      isPattern: false,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
       },
     );
   }
@@ -324,6 +379,7 @@ class _MealRecordPageState extends State<MealRecordPage> {
       _overlayEntry!.remove();
       _overlayEntry = null;
     }
+
     if (mounted) {
       setState(() {
         _isRangeExpanded = false;
@@ -334,7 +390,9 @@ class _MealRecordPageState extends State<MealRecordPage> {
   void _openDropdown() {
     final renderBox =
         _dropdownKey.currentContext?.findRenderObject() as RenderBox?;
+
     if (renderBox == null) return;
+
     final size = renderBox.size;
 
     setState(() {
@@ -357,64 +415,18 @@ class _MealRecordPageState extends State<MealRecordPage> {
             offset: Offset(0, size.height + 12),
             child: Material(
               color: Colors.transparent,
-              child: Container(
+              child: SizedBox(
                 width: size.width,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFF3F4F7)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: _MealRecordRange.values.map((range) {
-                    final isSelected = range == _selectedRange;
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(24),
-                      onTap: () {
-                        setState(() {
-                          _selectedRange = range;
-                        });
-                        _closeDropdown();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 18,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                range.label,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      fontWeight: isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.w600,
-                                      color: isSelected
-                                          ? const Color(0xFF5A46F5)
-                                          : const Color(0xFF4D5566),
-                                    ),
-                              ),
-                            ),
-                            if (isSelected)
-                              const Icon(
-                                Icons.check_rounded,
-                                color: Color(0xFF5A46F5),
-                                size: 24,
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                child: RecordRangeDropdown<_MealRecordRange>(
+                  values: _MealRecordRange.values,
+                  selectedValue: _selectedRange,
+                  labelBuilder: (range) => range.label,
+                  onSelected: (range) {
+                    setState(() {
+                      _selectedRange = range;
+                    });
+                    _closeDropdown();
+                  },
                 ),
               ),
             ),
@@ -447,50 +459,9 @@ class _MealRecordPageState extends State<MealRecordPage> {
             ),
           ),
         ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF8B5AFF), Color(0xFF9F7AEA)],
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF8B5AFF).withOpacity(0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(28),
-              onTap: () => _showAiAnalysisBottomSheet(filteredRecords),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'AI 건강 분석',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        AiAnalysisButton(
+          label: 'AI 건강 분석',
+          onTap: () => _showAiAnalysisBottomSheet(filteredRecords),
         ),
       ],
     );
@@ -499,122 +470,26 @@ class _MealRecordPageState extends State<MealRecordPage> {
   Widget _buildRangeFilterCard() {
     return CompositedTransformTarget(
       link: _layerLink,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          key: _dropdownKey,
-          borderRadius: BorderRadius.circular(24),
+      child: KeyedSubtree(
+        key: _dropdownKey,
+        child: RecordRangeFilterCard(
+          label: _selectedRange.label,
+          isExpanded: _isRangeExpanded,
           onTap: _toggleDropdown,
-          child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFF3F4F7)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  color: Color(0xFF5A46F5),
-                  size: 24,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    _selectedRange.label,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF26324B),
-                    ),
-                  ),
-                ),
-                Icon(
-                  _isRangeExpanded
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.chevron_right_rounded,
-                  color: const Color(0xFF9AA1B4),
-                  size: 28,
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
   }
 
   Widget _buildMealTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _mealFilters.map((mealFilter) {
-          final isSelected = mealFilter == _selectedMealFilter;
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () {
-                  setState(() {
-                    _selectedMealFilter = mealFilter;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF5A46F5) : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.transparent
-                          : const Color(0xFFF3F4F7),
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: const Color(0xFF5A46F5).withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                  ),
-                  child: Text(
-                    mealFilter,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF6B7384),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
+    return RecordCategoryTabs(
+      categories: _mealFilters,
+      selectedCategory: _selectedMealFilter,
+      onSelected: (mealFilter) {
+        setState(() {
+          _selectedMealFilter = mealFilter;
+        });
+      },
     );
   }
 
@@ -635,6 +510,7 @@ class _MealRecordPageState extends State<MealRecordPage> {
                   final records = <MealRecord>[
                     ...(snapshot.data ?? const <MealRecord>[]),
                   ]..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
                   final filteredRecords = _applyFilters(records);
 
                   return CustomScrollView(
@@ -708,6 +584,7 @@ class _MealRecordPageState extends State<MealRecordPage> {
                                     filteredRecords[index - 1].dateTime,
                                   );
                                   final currDate = _formatDate(record.dateTime);
+
                                   if (prevDate != currDate) {
                                     showDateHeader = true;
                                   }
@@ -805,6 +682,7 @@ class _MealRecordPageState extends State<MealRecordPage> {
                                                   );
                                                 },
                                               );
+
                                           if (confirmDelete == true &&
                                               context.mounted) {
                                             try {

@@ -1,4 +1,4 @@
-class BloodSugarRecord {
+class BloodGlucoseRecord {
   final String id;
   final String uid;
   final DateTime dateTime;
@@ -6,7 +6,7 @@ class BloodSugarRecord {
   final String mealState;
   final String memo;
 
-  BloodSugarRecord({
+  BloodGlucoseRecord({
     required this.id,
     required this.uid,
     required this.dateTime,
@@ -25,8 +25,8 @@ class BloodSugarRecord {
     };
   }
 
-  factory BloodSugarRecord.fromJson(String id, Map<String, dynamic> json) {
-    return BloodSugarRecord(
+  factory BloodGlucoseRecord.fromJson(String id, Map<String, dynamic> json) {
+    return BloodGlucoseRecord(
       id: id,
       uid: json['uid'] ?? '',
       dateTime: DateTime.parse(json['dateTime']),
