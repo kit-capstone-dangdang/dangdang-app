@@ -17,6 +17,7 @@ class BloodSugarRecordPage extends StatefulWidget {
 
 class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
   final repository = FirebaseBloodSugarRepository();
+
   List<BloodSugarRecord> records = [];
   bool isLoading = true;
 
@@ -26,14 +27,14 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
 
   Future<void> loadRecords() async {
     setState(() => isLoading = true);
+
     try {
       final data = await repository.getRecords();
 
       data.sort((a, b) => b.dateTime.compareTo(a.dateTime));
-      final recentData = data.take(4).toList();
 
       setState(() {
-        records = recentData;
+        records = data;
         isLoading = false;
       });
     } catch (e) {
@@ -47,16 +48,27 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
     loadRecords();
   }
 
-  // 💡 혈당 수치와 타이밍(식전/식후)에 따라 정확한 색상을 반환하는 마법의 함수!
   Color _getStatusColor(int value, String measureType) {
     if (measureType == '공복' || measureType == '식전') {
-      if (value < 100) return const Color(0xFF2F69FE); // 정상: 파랑
-      if (value < 126) return Colors.orange; // 주의: 주황
-      return const Color(0xFFFF4B4B); // 위험: 빨강
+      if (value < 100) {
+        return const Color(0xFF2F69FE);
+      }
+
+      if (value < 126) {
+        return Colors.orange;
+      }
+
+      return const Color(0xFFFF4B4B);
     } else {
-      if (value < 140) return const Color(0xFF2F69FE); // 정상: 파랑
-      if (value < 200) return Colors.orange; // 주의: 주황
-      return const Color(0xFFFF4B4B); // 위험: 빨강
+      if (value < 140) {
+        return const Color(0xFF2F69FE);
+      }
+
+      if (value < 200) {
+        return Colors.orange;
+      }
+
+      return const Color(0xFFFF4B4B);
     }
   }
 
@@ -85,6 +97,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                       color: Colors.black,
                     ),
                   ),
+
                   Row(
                     children: [
                       CustomIcon(
@@ -101,7 +114,9 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                           );
                         },
                       ),
+
                       const SizedBox(width: 10),
+
                       CustomIcon(
                         icon: Icons.add,
                         size: 52,
@@ -114,6 +129,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                               builder: (_) => const BloodSugarAddPage(),
                             ),
                           );
+
                           await loadRecords();
                         },
                       ),
@@ -122,6 +138,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                 ],
               ),
             ),
+
             SliverToBoxAdapter(
               child: isLoading
                   ? const SizedBox(
@@ -150,7 +167,9 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
               size: 72,
               color: Colors.grey.shade300,
             ),
+
             const SizedBox(height: 20),
+
             Text(
               '아직 혈당 기록이 없어요',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -158,7 +177,9 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                 color: Colors.grey.shade700,
               ),
             ),
+
             const SizedBox(height: 10),
+
             Text(
               '우측 상단 + 버튼으로\n첫 혈당 기록을 추가해보세요',
               textAlign: TextAlign.center,
@@ -180,17 +201,21 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(records.length, (index) {
           final record = records[index];
+
           bool showDateHeader = false;
 
           if (index == 0) {
             showDateHeader = true;
           } else {
             final prevDate = _formatDate(records[index - 1].dateTime);
+
             final currDate = _formatDate(record.dateTime);
-            if (prevDate != currDate) showDateHeader = true;
+
+            if (prevDate != currDate) {
+              showDateHeader = true;
+            }
           }
 
-          // 💡 여기서 개별 기록마다 알맞은 테마 색상을 뽑아냅니다!
           final Color themeColor = _getStatusColor(
             record.bloodSugar,
             record.mealState,
@@ -201,14 +226,15 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
             children: [
               if (showDateHeader) ...[
                 if (index > 0) const SizedBox(height: 32),
+
                 DateHeader(date: _formatDate(record.dateTime)),
+
                 const SizedBox(height: 16),
               ],
+
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: Theme(
-                  // 💡 중요: 개별 카드 내부에서 이 색상을 'Theme.of(context).primaryColor' 등으로
-                  // 쉽게 땡겨서 쓸 수 있도록 테마로 감싸서 전달해 줍니다!
                   data: Theme.of(context).copyWith(primaryColor: themeColor),
                   child: BloodSugarRecordCard(
                     record: record,
@@ -219,6 +245,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
                           builder: (_) => BloodSugarEditPage(record: record),
                         ),
                       );
+
                       await loadRecords();
                     },
                     onDelete: () => _handleDelete(record),
@@ -254,6 +281,7 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
               ),
             ),
           ),
+
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text(
@@ -268,11 +296,13 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
     if (confirmDelete == true && mounted) {
       try {
         await repository.deleteRecord(record.id);
+
         if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('성공적으로 삭제되었습니다.')));
         }
+
         await loadRecords();
       } catch (e) {
         if (mounted) {
