@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dangdang/core/widgets/common/image_source_bottom_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,6 +17,7 @@ import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_re
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:dangdang/features/profile/presentation/pages/my_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
+import 'package:dangdang/core/widgets/common/profile_avatar.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -28,7 +30,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   bool _isLoading = false;
   bool _isLoadingBloodSugar = true;
 
-  String _userName = '사용자';
+  String _userNickname = '사용자';
+  String _profileImageUrl = '';
 
   final FirebaseBloodSugarRepository _bloodSugarRepo =
       FirebaseBloodSugarRepository();
@@ -69,13 +72,15 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     if (!mounted) return;
 
     setState(() {
-      _userName = data?['name']?.toString() ?? user.displayName ?? '사용자';
+      _userNickname =
+          data?['nickname']?.toString() ?? user.displayName ?? '사용자';
+      _profileImageUrl = data?['profileImageUrl']?.toString() ?? '';
     });
   }
 
   String get _userInitial {
-    if (_userName.isEmpty) return '';
-    return _userName.characters.first;
+    if (_userNickname.isEmpty) return '';
+    return _userNickname.characters.first;
   }
 
   Future<void> _loadHomeBloodSugarData() async {
@@ -226,89 +231,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        final textTheme = Theme.of(context).textTheme;
-        final colorScheme = Theme.of(context).colorScheme;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await _pickImageAndAnalyze(
-                    context: parentContext,
-                    pickImage: imagePickerService.pickFromCamera,
-                  );
-                },
-                icon: Icon(
-                  Icons.camera_alt,
-                  color: colorScheme.onPrimary,
-                  size: 24,
-                ),
-                label: Text(
-                  '카메라로 촬영하기',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 5,
-                ),
-              ),
-              const SizedBox(height: 15),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await _pickImageAndAnalyze(
-                    context: parentContext,
-                    pickImage: imagePickerService.pickFromGallery,
-                  );
-                },
-                icon: Icon(
-                  Icons.image_outlined,
-                  color: colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                label: Text(
-                  '갤러리에서 선택하기',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.surfaceContainerHighest,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-              const SizedBox(height: 15),
-            ],
-          ),
+        return ImageSourceBottomSheet(
+          onCameraTap: () async {
+            await _pickImageAndAnalyze(
+              context: parentContext,
+              pickImage: imagePickerService.pickFromCamera,
+            );
+          },
+          onGalleryTap: () async {
+            await _pickImageAndAnalyze(
+              context: parentContext,
+              pickImage: imagePickerService.pickFromGallery,
+            );
+          },
         );
       },
     );
@@ -357,7 +292,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '안녕하세요, $_userName님!',
+                            '안녕하세요, $_userNickname님!',
                             style: textTheme.headlineMedium?.copyWith(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
@@ -366,7 +301,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '오늘도 건강한 하루 되세요.',
+                            '오늘도 건강한 하루 되세요',
                             style: textTheme.bodyMedium?.copyWith(
                               fontSize: 16,
                               color: colorScheme.onSurfaceVariant,
@@ -375,7 +310,14 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ],
                       ),
                     ),
-                    GestureDetector(
+                    ProfileAvatar(
+                      radius: 25,
+                      profileImageUrl: _profileImageUrl,
+                      fallbackText: _userInitial,
+                      textStyle: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                       onTap: () async {
                         await Navigator.push(
                           context,
@@ -386,17 +328,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         await _loadUserInfo();
                         bloodSugarSyncNotifier.value++;
                       },
-                      child: CircleAvatar(
-                        radius: 25,
-                        backgroundColor: const Color(0xFFE8F0FE),
-                        child: Text(
-                          _userInitial,
-                          style: textTheme.titleMedium?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                 ),
