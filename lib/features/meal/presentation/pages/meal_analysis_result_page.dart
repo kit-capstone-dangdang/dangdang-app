@@ -4,6 +4,7 @@ import 'package:dangdang/features/meal/data/repositories/firebase_meal_repositor
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
 import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';
 import 'package:dangdang/features/meal/presentation/widgets/food_detail_item_card.dart';
+import 'package:dangdang/features/meal/presentation/widgets/meal_image_viewer.dart';
 import 'package:dangdang/features/meal/presentation/widgets/nutrition_summary_box.dart';
 import 'package:flutter/material.dart';
 
@@ -34,10 +35,7 @@ class MealAnalysisResultPage extends StatelessWidget {
 
             if (currentRecord == null) {
               return Center(
-                child: Text(
-                  '식단 기록을 찾을 수 없습니다.',
-                  style: textTheme.bodyLarge,
-                ),
+                child: Text('식단 기록을 찾을 수 없습니다.', style: textTheme.bodyLarge),
               );
             }
 
@@ -95,13 +93,8 @@ class MealAnalysisResultPage extends StatelessWidget {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               backgroundColor: colorScheme.surface,
-                              title: Text(
-                                '식단 삭제',
-                                style: textTheme.titleLarge,
-                              ),
-                              content: const Text(
-                                '이 식단 기록을 정말 삭제하시겠습니까?',
-                              ),
+                              title: Text('식단 삭제', style: textTheme.titleLarge),
+                              content: const Text('이 식단 기록을 정말 삭제하시겠습니까?'),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
@@ -114,8 +107,7 @@ class MealAnalysisResultPage extends StatelessWidget {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, true),
+                                  onPressed: () => Navigator.pop(context, true),
                                   child: const Text(
                                     '삭제',
                                     style: TextStyle(
@@ -138,9 +130,7 @@ class MealAnalysisResultPage extends StatelessWidget {
 
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('성공적으로 삭제했습니다.'),
-                                ),
+                                const SnackBar(content: Text('성공적으로 삭제했습니다.')),
                               );
                               Navigator.pop(context);
                             }
@@ -166,32 +156,7 @@ class MealAnalysisResultPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomCard(
-                          padding: EdgeInsets.zero,
-                          borderRadius: 38,
-                          backgroundColor: Colors.grey.shade200,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(38),
-                            child: currentRecord.imageUrl.isEmpty
-                                ? SizedBox(
-                                    height: 300,
-                                    width: double.infinity,
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.fastfood,
-                                        size: 64,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
-                                  )
-                                : Image.network(
-                                    currentRecord.imageUrl,
-                                    height: 300,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                        ),
+                        MealImageViewer(imageUrl: currentRecord.imageUrl),
                         const SizedBox(height: 22),
                         NutritionSummaryBox(
                           calories: (totalNutrition['calories'] ?? 0).round(),

@@ -1,9 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:dangdang/core/widgets/common/custom_card.dart';
 import 'package:dangdang/features/meal/domain/entities/food_item.dart';
 import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';
 import 'package:dangdang/features/meal/presentation/widgets/food_detail_item_card.dart';
+import 'package:dangdang/features/meal/presentation/widgets/meal_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -16,36 +15,6 @@ class AnalysisResultPage extends StatelessWidget {
     required this.result,
     required this.image,
   });
-
-  Widget _buildImage() {
-    if (image == null) {
-      return const SizedBox(
-        height: 300,
-        width: double.infinity,
-        child: Center(child: Icon(Icons.fastfood, size: 64)),
-      );
-    }
-
-    return FutureBuilder<Uint8List>(
-      future: image!.readAsBytes(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox(
-            height: 300,
-            width: double.infinity,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        return Image.memory(
-          snapshot.data!,
-          height: 300,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,15 +57,7 @@ class AnalysisResultPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomCard(
-                      padding: EdgeInsets.zero,
-                      borderRadius: 38,
-                      backgroundColor: Colors.grey.shade200,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(38),
-                        child: _buildImage(),
-                      ),
-                    ),
+                    MealImageViewer(image: image),
                     const SizedBox(height: 22),
                     Text(
                       '인식된 음식 (${foods.length})',
