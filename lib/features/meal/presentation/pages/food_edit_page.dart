@@ -66,8 +66,9 @@ class _FoodEditPageState extends State<FoodEditPage> {
       _baseFoods = rawFoods.map((item) {
         final mapItem = item as Map<String, dynamic>;
 
-        double analyzeServingCount = parseDouble(
+        double analyzeServingCount = parseServingCount(
           mapItem['servingCount'],
+          amountLabel: _amountLabelFromItem(mapItem),
           defaultValue: 1.0,
         );
         if (analyzeServingCount <= 0) analyzeServingCount = 1.0;
@@ -92,7 +93,13 @@ class _FoodEditPageState extends State<FoodEditPage> {
       }).toList();
 
       quantities = rawFoods
-          .map((item) => parseDouble(item['servingCount'], defaultValue: 1.0))
+          .map(
+            (item) => parseServingCount(
+              (item as Map<String, dynamic>)['servingCount'],
+              amountLabel: _amountLabelFromItem(item),
+              defaultValue: 1.0,
+            ),
+          )
           .toList();
     }
 

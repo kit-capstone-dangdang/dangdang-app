@@ -40,10 +40,16 @@ class FoodItem {
   }
 
   factory FoodItem.fromJson(Map<String, dynamic> json) {
+    final amountLabel = json['amountLabel'] ?? '';
+
     return FoodItem(
       name: json['name'] ?? '',
-      amountLabel: json['amountLabel'] ?? '',
-      servingCount: parseDouble(json['servingCount'], defaultValue: 1.0),
+      amountLabel: amountLabel,
+      servingCount: parseServingCount(
+        json['servingCount'],
+        amountLabel: amountLabel.toString(),
+        defaultValue: 1.0,
+      ),
       calories: parseDouble(json['calories']),
       carbohydrate: parseDouble(json['carbohydrate']),
       protein: parseDouble(json['protein']),

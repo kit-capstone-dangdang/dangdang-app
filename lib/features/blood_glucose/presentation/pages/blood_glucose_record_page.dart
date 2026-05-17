@@ -1,4 +1,5 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dangdang/core/widgets/common/custom_icon.dart';
 import 'package:dangdang/core/widgets/common/state_views.dart';
@@ -95,6 +96,34 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
     }
   }
 
+  Future<String> _loadDiabetesType() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      return '2형';
+    }
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    return snapshot.data()?['diabetesType']?.toString() ?? '2형';
+  }
+
+  Future<BloodGlucoseAnalysisResult> _analyzeBloodSugarHabits({
+    required List<BloodGlucoseRecord> targetRecords,
+  }) async {
+    final diabetesType = await _loadDiabetesType();
+
+    return _aiService.analyzeBloodSugarHabits(
+      records: targetRecords,
+      rangeLabel: _selectedRange.label,
+      timeFilter: _selectedTimeFilter,
+      diabetesType: diabetesType,
+    );
+  }
+
   void _showAiAnalysisBottomSheet(List<BloodGlucoseRecord> targetRecords) {
     showModalBottomSheet(
       context: context,
@@ -105,10 +134,8 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
           title: 'AI 맞춤 혈당 리포트',
           subtitle: '필터: ${_selectedRange.label} · $_selectedTimeFilter',
           loadingMessage: 'AI 혈당 분석중입니다...',
-          analysisFuture: _aiService.analyzeBloodSugarHabits(
-            records: targetRecords,
-            rangeLabel: _selectedRange.label,
-            timeFilter: _selectedTimeFilter,
+          analysisFuture: _analyzeBloodSugarHabits(
+            targetRecords: targetRecords,
           ),
           analysisBuilder: (context, result) {
             final patterns = result.patterns.isEmpty

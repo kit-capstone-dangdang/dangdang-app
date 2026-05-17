@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dangdang/core/widgets/common/state_views.dart';
@@ -101,6 +103,34 @@ class _MealRecordPageState extends State<MealRecordPage> {
     return '필터: ${_selectedRange.label} · $_selectedMealFilter';
   }
 
+  Future<String> _loadDiabetesType() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      return '2형';
+    }
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    return snapshot.data()?['diabetesType']?.toString() ?? '2형';
+  }
+
+  Future<MealHabitAnalysisResult> _analyzeMealHabits({
+    required List<MealRecord> records,
+    required String subtitle,
+  }) async {
+    final diabetesType = await _loadDiabetesType();
+
+    return MealAiService().analyzeMealHabits(
+      records: records,
+      scopeLabel: subtitle,
+      diabetesType: diabetesType,
+    );
+  }
+
   void _showEmptyAnalysisSnackBar() {
     ScaffoldMessenger.of(
       context,
@@ -124,9 +154,9 @@ class _MealRecordPageState extends State<MealRecordPage> {
           title: 'AI 식단 건강 리포트',
           subtitle: subtitle,
           loadingMessage: 'AI 식단 분석중입니다...',
-          analysisFuture: MealAiService().analyzeMealHabits(
+          analysisFuture: _analyzeMealHabits(
             records: records,
-            scopeLabel: subtitle,
+            subtitle: subtitle,
           ),
           analysisBuilder: (context, result) {
             final patterns = result.patterns.isEmpty

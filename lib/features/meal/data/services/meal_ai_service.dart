@@ -56,6 +56,7 @@ class MealAiService {
   Future<MealHabitAnalysisResult> analyzeMealHabits({
     required List<MealRecord> records,
     required String scopeLabel,
+    required String diabetesType,
   }) async {
     if (records.isEmpty) {
       return const MealHabitAnalysisResult(patterns: [], recommendations: []);
@@ -64,12 +65,15 @@ class MealAiService {
     final mealRecordsJson = jsonEncode(
       records.map((record) => _buildMealRecordPayload(record)).toList(),
     );
+
     final responseText = await _client.generateText(
       buildMealHabitAnalysisPrompt(
         scopeLabel: scopeLabel,
         mealRecordsJson: mealRecordsJson,
+        diabetesType: diabetesType,
       ),
     );
+
     final decoded = _client.decodeJsonObject(responseText);
 
     return MealHabitAnalysisResult(
@@ -80,11 +84,16 @@ class MealAiService {
 
   FoodItem _mapFoodItem(dynamic value) {
     final item = value as Map<String, dynamic>;
+    final amountLabel = item['amountLabel'] ?? '1인분';
 
     return FoodItem(
       name: item['name'] ?? '',
-      amountLabel: item['amountLabel'] ?? '1인분',
-      servingCount: parseDouble(item['servingCount'], defaultValue: 1.0),
+      amountLabel: amountLabel,
+      servingCount: parseServingCount(
+        item['servingCount'],
+        amountLabel: amountLabel.toString(),
+        defaultValue: 1.0,
+      ),
       calories: parseDouble(item['calories']),
       carbohydrate: parseDouble(item['carbohydrate']),
       protein: parseDouble(item['protein']),
