@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/prompts/blood_glucose_analysis_prompts.dart';
-import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_analysis_result.dart'; // 경로에 맞게 수정해주세요
+import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_analysis_result.dart';
 
 class BloodGlucoseAIService {
   final GeminiClient _geminiClient;
@@ -14,6 +14,7 @@ class BloodGlucoseAIService {
     required List<BloodGlucoseRecord> records,
     required String rangeLabel,
     required String timeFilter,
+    required String diabetesType,
   }) async {
     try {
       if (records.isEmpty) {
@@ -33,6 +34,7 @@ class BloodGlucoseAIService {
             },
           )
           .toList();
+
       final String recordsJson = jsonEncode(recordMaps);
 
       final prompt =
@@ -40,6 +42,7 @@ class BloodGlucoseAIService {
             bloodGlucoseRecordsJson: recordsJson,
             rangeLabel: rangeLabel,
             timeFilter: timeFilter,
+            diabetesType: diabetesType,
           );
 
       final response = await _geminiClient.generateText(prompt);

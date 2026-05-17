@@ -56,6 +56,7 @@ class MealAiService {
   Future<MealHabitAnalysisResult> analyzeMealHabits({
     required List<MealRecord> records,
     required String scopeLabel,
+    required String diabetesType,
   }) async {
     if (records.isEmpty) {
       return const MealHabitAnalysisResult(patterns: [], recommendations: []);
@@ -64,12 +65,15 @@ class MealAiService {
     final mealRecordsJson = jsonEncode(
       records.map((record) => _buildMealRecordPayload(record)).toList(),
     );
+
     final responseText = await _client.generateText(
       buildMealHabitAnalysisPrompt(
         scopeLabel: scopeLabel,
         mealRecordsJson: mealRecordsJson,
+        diabetesType: diabetesType,
       ),
     );
+
     final decoded = _client.decodeJsonObject(responseText);
 
     return MealHabitAnalysisResult(
