@@ -77,7 +77,14 @@ class FirebaseAuthRepository implements AuthRepository {
 
       await _firestore.collection('users').doc(firebaseUser.uid).set({
         ...user.toJson(),
+        'birthDate': '',
+        'gender': '',
+        'height': 0,
+        'weight': 0,
+        'diabetesType': '',
+        'profileImageUrl': '',
         'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
       });
     } on auth.FirebaseAuthException catch (e) {
       _throwAuthException('회원가입', e);

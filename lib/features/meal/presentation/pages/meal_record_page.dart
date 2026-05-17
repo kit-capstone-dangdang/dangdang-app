@@ -16,6 +16,7 @@ import 'package:dangdang/features/meal/presentation/pages/meal_analysis_result_p
 import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:dangdang/features/meal/presentation/widgets/meal_record_card.dart';
+import 'package:dangdang/core/widgets/common/image_source_bottom_sheet.dart';
 
 class MealRecordPage extends StatefulWidget {
   const MealRecordPage({super.key});
@@ -285,90 +286,19 @@ class _MealRecordPageState extends State<MealRecordPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await _pickImageAndAnalyze(
-                    context: parentContext,
-                    pickImage: imagePickerService.pickFromCamera,
-                  );
-                },
-                icon: const Icon(
-                  Icons.camera_alt,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                label: const Text(
-                  '카메라로 촬영하기',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 5,
-                ),
-              ),
-              const SizedBox(height: 15),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await _pickImageAndAnalyze(
-                    context: parentContext,
-                    pickImage: imagePickerService.pickFromGallery,
-                  );
-                },
-                icon: Icon(
-                  Icons.image_outlined,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                label: Text(
-                  '갤러리에서 선택하기',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-              const SizedBox(height: 15),
-            ],
-          ),
+        return ImageSourceBottomSheet(
+          onCameraTap: () async {
+            await _pickImageAndAnalyze(
+              context: parentContext,
+              pickImage: imagePickerService.pickFromCamera,
+            );
+          },
+          onGalleryTap: () async {
+            await _pickImageAndAnalyze(
+              context: parentContext,
+              pickImage: imagePickerService.pickFromGallery,
+            );
+          },
         );
       },
     );

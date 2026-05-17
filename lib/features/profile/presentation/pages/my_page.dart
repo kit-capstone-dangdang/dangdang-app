@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dangdang/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:dangdang/features/profile/presentation/widgets/profile_menu_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:dangdang/core/widgets/common/profile_avatar.dart';
+import 'package:dangdang/features/profile/presentation/pages/security_privacy_page.dart';
+import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});
@@ -11,8 +15,9 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {
-  String _name = '';
+  String _nickname = '';
   String _email = '';
+  String _profileImageUrl = '';
 
   @override
   void initState() {
@@ -35,21 +40,37 @@ class _MyPageState extends State<MyPage> {
     if (!mounted) return;
 
     setState(() {
-      _name = data?['name']?.toString() ?? user.displayName ?? '사용자';
+      _nickname = data?['nickname']?.toString() ?? user.displayName ?? '사용자';
       _email = data?['email']?.toString() ?? user.email ?? '';
+      _profileImageUrl = data?['profileImageUrl']?.toString() ?? '';
     });
   }
 
   String get _initial {
-    if (_name.isEmpty) return '';
-    return _name.characters.first;
+    if (_nickname.isEmpty) return '';
+    return _nickname.characters.first;
   }
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
 
-    if (mounted) {
-      Navigator.pop(context);
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
+  }
+
+  Future<void> _goToEditProfilePage() async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EditProfilePage()),
+    );
+
+    if (updated == true) {
+      await _loadUserInfo();
     }
   }
 
@@ -102,12 +123,20 @@ class _MyPageState extends State<MyPage> {
                     Center(
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 86,
-                            backgroundColor: const Color(0xFFE8F0FE),
-                            child: Text(
-                              _initial,
-                              style: textTheme.displayMedium?.copyWith(
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color.fromARGB(255, 237, 238, 241),
+                                width: 2,
+                              ),
+                            ),
+                            child: ProfileAvatar(
+                              radius: 86,
+                              profileImageUrl: _profileImageUrl,
+                              fallbackText: _initial,
+                              textStyle: textTheme.displayMedium?.copyWith(
                                 color: const Color(0xFF4F63F6),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -115,7 +144,7 @@ class _MyPageState extends State<MyPage> {
                           ),
                           const SizedBox(height: 30),
                           Text(
-                            '$_name님',
+                            '$_nickname님',
                             style: textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF111827),
@@ -137,6 +166,7 @@ class _MyPageState extends State<MyPage> {
                       title: '내 정보 수정',
                       iconColor: const Color(0xFF4F63F6),
                       backgroundColor: const Color(0xFFF1F5FF),
+                      onTap: _goToEditProfilePage,
                     ),
                     ProfileMenuCard(
                       icon: Icons.favorite_border_rounded,
@@ -155,6 +185,14 @@ class _MyPageState extends State<MyPage> {
                       title: '보안 및 개인정보',
                       iconColor: const Color(0xFF16A34A),
                       backgroundColor: const Color(0xFFF0FDF4),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SecurityPrivacyPage(),
+                          ),
+                        );
+                      },
                     ),
                     ProfileMenuCard(
                       icon: Icons.settings_outlined,
