@@ -8,8 +8,4 @@ abstract class BloodSugarRepository {
   Future<void> updateRecord(BloodGlucoseRecord record);
 
   Future<void> deleteRecord(String id);
-
-  Future<void> saveAiReport(String reportText);
-
-  Future<String?> getLatestAiReport();
 }
