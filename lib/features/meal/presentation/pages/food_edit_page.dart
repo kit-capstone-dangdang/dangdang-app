@@ -37,9 +37,10 @@ class _FoodEditPageState extends State<FoodEditPage> {
   String selectedMeal = '점심';
   List<double> quantities = [];
   bool _isSaving = false;
+  final Set<int> _refiningFoodIndices = <int>{};
 
   List<FoodItem> _baseFoods = [];
-  late List<String> _initialNames;
+  late List<String> _lastRefinedNames;
   String? _networkImageUrl;
   XFile? _newImage;
 
@@ -103,7 +104,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
           .toList();
     }
 
-    _initialNames = _baseFoods.map((f) => f.name).toList();
+    _lastRefinedNames = _baseFoods.map((f) => f.name).toList();
   }
 
   String _amountLabelFromItem(Map<String, dynamic> item) {
@@ -172,6 +173,54 @@ class _FoodEditPageState extends State<FoodEditPage> {
     );
   }
 
+  Future<void> _refineFoodName(int index, String newName) async {
+    final trimmedName = newName.trim();
+    if (trimmedName.isEmpty || trimmedName == _baseFoods[index].name) {
+      return;
+    }
+
+    final previousFood = _baseFoods[index];
+
+    setState(() {
+      _baseFoods[index] = previousFood.copyWith(name: trimmedName);
+      _refiningFoodIndices.add(index);
+    });
+
+    try {
+      final updatedItems = await _mealAiService.refineMultipleFoodsInfo([
+        trimmedName,
+      ]);
+
+      if (updatedItems.isEmpty) {
+        throw Exception('음식 정보를 불러오지 못했습니다.');
+      }
+
+      final updatedFood = updatedItems.first.copyWith(
+        servingCount: previousFood.servingCount,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _baseFoods[index] = updatedFood;
+        _lastRefinedNames[index] = updatedFood.name;
+        _refiningFoodIndices.remove(index);
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _refiningFoodIndices.remove(index);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('음식명은 바뀌었지만 영양정보를 바로 불러오지 못했어요. 저장할 때 다시 시도할게요.'),
+        ),
+      );
+    }
+  }
+
   Future<void> _showImagePicker(BuildContext context) {
     return showModalBottomSheet(
       context: context,
@@ -230,7 +279,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
       List<String> changedNames = [];
 
       for (int i = 0; i < _baseFoods.length; i++) {
-        if (_baseFoods[i].name != _initialNames[i]) {
+        if (_baseFoods[i].name != _lastRefinedNames[i]) {
           changedIndices.add(i);
           changedNames.add(_baseFoods[i].name);
         }
@@ -241,7 +290,11 @@ class _FoodEditPageState extends State<FoodEditPage> {
           changedNames,
         );
         for (int i = 0; i < changedIndices.length; i++) {
-          _baseFoods[changedIndices[i]] = updatedItems[i];
+          final currentIndex = changedIndices[i];
+          _baseFoods[currentIndex] = updatedItems[i].copyWith(
+            servingCount: _baseFoods[currentIndex].servingCount,
+          );
+          _lastRefinedNames[currentIndex] = _baseFoods[currentIndex].name;
         }
       }
 
@@ -551,24 +604,14 @@ class _FoodEditPageState extends State<FoodEditPage> {
                         return FoodItemCard(
                           item: _baseFoods[index],
                           quantity: quantities[index],
+                          isUpdating: _refiningFoodIndices.contains(index),
                           onChanged: (value) {
                             setState(() {
                               quantities[index] = value;
                             });
                           },
                           onNameChanged: (newName) {
-                            setState(() {
-                              _baseFoods[index] = FoodItem(
-                                name: newName,
-                                amountLabel: _baseFoods[index].amountLabel,
-                                servingCount: _baseFoods[index].servingCount,
-                                calories: _baseFoods[index].calories,
-                                carbohydrate: _baseFoods[index].carbohydrate,
-                                protein: _baseFoods[index].protein,
-                                fat: _baseFoods[index].fat,
-                                sugar: _baseFoods[index].sugar,
-                              );
-                            });
+                            _refineFoodName(index, newName);
                           },
                         );
                       }),
@@ -586,7 +629,10 @@ class _FoodEditPageState extends State<FoodEditPage> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isSaving ? null : _saveMealRecord,
+                        onPressed:
+                            (_isSaving || _refiningFoodIndices.isNotEmpty)
+                            ? null
+                            : _saveMealRecord,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3B82F6),
                           shape: RoundedRectangleBorder(
@@ -606,7 +652,9 @@ class _FoodEditPageState extends State<FoodEditPage> {
                                 ),
                               )
                             : Text(
-                                isEditMode ? '수정하기' : '저장하기',
+                                _refiningFoodIndices.isNotEmpty
+                                    ? '영양정보 업데이트 중...'
+                                    : (isEditMode ? '수정하기' : '저장하기'),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,

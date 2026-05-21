@@ -6,6 +6,7 @@ class FoodItemCard extends StatelessWidget {
   final double quantity;
   final Function(double) onChanged;
   final Function(String)? onNameChanged;
+  final bool isUpdating;
 
   const FoodItemCard({
     super.key,
@@ -13,6 +14,7 @@ class FoodItemCard extends StatelessWidget {
     required this.quantity,
     required this.onChanged,
     this.onNameChanged,
+    this.isUpdating = false,
   });
 
   Future<void> _showEditNameDialog(BuildContext context) async {
@@ -85,7 +87,7 @@ class FoodItemCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     InkWell(
-                      onTap: () => _showEditNameDialog(context),
+                      onTap: isUpdating ? null : () => _showEditNameDialog(context),
                       child: const Padding(
                         padding: EdgeInsets.all(4.0),
                         child: Icon(
@@ -100,16 +102,32 @@ class FoodItemCard extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Text(
-                    currentCalories.toStringAsFixed(0),
-                    style: const TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                  if (isUpdating) ...[
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Text('kcal'),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '분석 중',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ] else ...[
+                    Text(
+                      currentCalories.toStringAsFixed(0),
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text('kcal'),
+                  ],
                   IconButton(
                     onPressed: () {},
                     icon: const Icon(

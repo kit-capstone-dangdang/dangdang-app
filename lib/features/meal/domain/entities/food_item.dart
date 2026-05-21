@@ -58,6 +58,28 @@ class FoodItem {
     );
   }
 
+  FoodItem copyWith({
+    String? name,
+    String? amountLabel,
+    double? servingCount,
+    double? calories,
+    double? carbohydrate,
+    double? protein,
+    double? fat,
+    double? sugar,
+  }) {
+    return FoodItem(
+      name: name ?? this.name,
+      amountLabel: amountLabel ?? this.amountLabel,
+      servingCount: servingCount ?? this.servingCount,
+      calories: calories ?? this.calories,
+      carbohydrate: carbohydrate ?? this.carbohydrate,
+      protein: protein ?? this.protein,
+      fat: fat ?? this.fat,
+      sugar: sugar ?? this.sugar,
+    );
+  }
+
   FoodItem scaled(double quantity) {
     return FoodItem(
       name: name,
