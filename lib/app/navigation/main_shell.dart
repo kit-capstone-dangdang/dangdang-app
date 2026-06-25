@@ -1,8 +1,9 @@
-import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
-import 'package:flutter/material.dart';
 import 'package:dangdang/core/widgets/common/custom_bottom_navigation_bar.dart';
+import 'package:dangdang/features/ai_chat/presentation/pages/ai_chat_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
 import 'package:dangdang/features/home/presentation/pages/home_dashboard_page.dart';
 import 'package:dangdang/features/meal/presentation/pages/meal_record_page.dart';
+import 'package:flutter/material.dart';
 
 class MainShell extends StatefulWidget {
   final int initialIndex;
@@ -16,11 +17,11 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   late int _selectedIndex;
 
-  final List<Widget> _screens = [
+  late final List<Widget> _screens = [
     const HomeDashboardPage(),
     const BloodSugarRecordPage(),
     const MealRecordPage(),
-    const Center(child: Text('AI 챗 화면')),
+    const AiChatPage(),
   ];
 
   @override
