@@ -164,7 +164,7 @@ class _AiChatPageState extends State<AiChatPage> {
     final canSend = _messageController.text.trim().isNotEmpty && !_isLoading;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
