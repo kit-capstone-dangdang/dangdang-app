@@ -37,6 +37,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
   String selectedMeal = '점심';
   List<double> quantities = [];
   bool _isSaving = false;
+  bool _isAddingFood = false;
   final Set<int> _refiningFoodIndices = <int>{};
 
   List<FoodItem> _baseFoods = [];
@@ -219,6 +220,90 @@ class _FoodEditPageState extends State<FoodEditPage> {
         ),
       );
     }
+  }
+
+  Future<void> _addFood(String foodName) async {
+    final trimmedName = foodName.trim();
+    if (trimmedName.isEmpty || _isAddingFood) {
+      return;
+    }
+
+    setState(() {
+      _isAddingFood = true;
+    });
+
+    try {
+      final updatedItems = await _mealAiService.refineMultipleFoodsInfo([
+        trimmedName,
+      ]);
+
+      if (updatedItems.isEmpty) {
+        throw Exception('음식 정보를 불러오지 못했습니다.');
+      }
+
+      final addedFood = updatedItems.first.copyWith(servingCount: 1.0);
+
+      if (!mounted) return;
+
+      setState(() {
+        _baseFoods.add(addedFood);
+        quantities.add(1.0);
+        _lastRefinedNames.add(addedFood.name);
+        _isAddingFood = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isAddingFood = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('음식을 추가하지 못했습니다. 잠시 후 다시 시도해주세요.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showAddFoodDialog() async {
+    final controller = TextEditingController();
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('음식 추가'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: '음식명을 입력하세요'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('취소', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('확인', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.trim().isNotEmpty) {
+      await _addFood(result.trim());
+    }
+  }
+
+  void _removeFood(int index) {
+    setState(() {
+      _baseFoods.removeAt(index);
+      quantities.removeAt(index);
+      _lastRefinedNames.removeAt(index);
+      _refiningFoodIndices.remove(index);
+    });
   }
 
   Future<void> _showImagePicker(BuildContext context) {
@@ -591,12 +676,67 @@ class _FoodEditPageState extends State<FoodEditPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text(
-                      '식단 구성 (${_baseFoods.length})',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '식단 구성 (${_baseFoods.length})',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap:
+                              (_isSaving || _isAddingFood)
+                                  ? null
+                                  : _showAddFoodDialog,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _isAddingFood
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.add,
+                                        size: 18,
+                                        color: Color(0xFF3B82F6),
+                                      ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _isAddingFood ? '음식 추가 중..' : '음식 추가',
+                                  style: const TextStyle(
+                                    color: Color(0xFF3B82F6),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Column(
@@ -613,6 +753,14 @@ class _FoodEditPageState extends State<FoodEditPage> {
                           onNameChanged: (newName) {
                             _refineFoodName(index, newName);
                           },
+                          onDelete:
+                              (_isSaving ||
+                                  _isAddingFood ||
+                                  _refiningFoodIndices.isNotEmpty)
+                              ? null
+                              : () {
+                                  _removeFood(index);
+                                },
                         );
                       }),
                     ),
@@ -630,9 +778,11 @@ class _FoodEditPageState extends State<FoodEditPage> {
                       height: 56,
                       child: ElevatedButton(
                         onPressed:
-                            (_isSaving || _refiningFoodIndices.isNotEmpty)
-                            ? null
-                            : _saveMealRecord,
+                            (_isSaving ||
+                                _isAddingFood ||
+                                _refiningFoodIndices.isNotEmpty)
+                                ? null
+                                : _saveMealRecord,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3B82F6),
                           shape: RoundedRectangleBorder(
@@ -654,7 +804,9 @@ class _FoodEditPageState extends State<FoodEditPage> {
                             : Text(
                                 _refiningFoodIndices.isNotEmpty
                                     ? '영양정보 업데이트 중...'
-                                    : (isEditMode ? '수정하기' : '저장하기'),
+                                    : _isAddingFood
+                                        ? '음식 추가 중...'
+                                        : (isEditMode ? '수정하기' : '저장하기'),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
