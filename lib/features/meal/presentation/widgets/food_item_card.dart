@@ -6,6 +6,7 @@ class FoodItemCard extends StatelessWidget {
   final double quantity;
   final Function(double) onChanged;
   final Function(String)? onNameChanged;
+  final VoidCallback? onDelete;
   final bool isUpdating;
 
   const FoodItemCard({
@@ -14,6 +15,7 @@ class FoodItemCard extends StatelessWidget {
     required this.quantity,
     required this.onChanged,
     this.onNameChanged,
+    this.onDelete,
     this.isUpdating = false,
   });
 
@@ -129,7 +131,7 @@ class FoodItemCard extends StatelessWidget {
                     const Text('kcal'),
                   ],
                   IconButton(
-                    onPressed: () {},
+                    onPressed: isUpdating ? null : onDelete,
                     icon: const Icon(
                       Icons.delete_outline,
                       color: Colors.grey,
