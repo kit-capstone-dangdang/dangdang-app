@@ -8,6 +8,8 @@ class FirebaseAuthRepository implements AuthRepository {
   final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  String _nicknameDocId(String nickname) => nickname.trim().toLowerCase();
+
   Never _throwAuthException(String action, auth.FirebaseAuthException e) {
     debugPrint(
       '[FirebaseAuth][$action] code=${e.code}, message=${e.message}, email=${e.email}',
@@ -26,13 +28,15 @@ class FirebaseAuthRepository implements AuthRepository {
       case 'invalid-credential':
         throw Exception('이메일 또는 비밀번호가 올바르지 않습니다.');
       case 'network-request-failed':
-        throw Exception('네트워크 오류로 로그인에 실패했습니다. 인터넷 연결과 배포 도메인을 확인해 주세요.');
+        throw Exception(
+          '네트워크 오류로 로그인에 실패했습니다. 인터넷 연결 상태를 확인해 주세요.',
+        );
       case 'too-many-requests':
-        throw Exception('요청이 너무 많아 잠시 차단되었습니다. 잠시 후 다시 시도해 주세요.');
+        throw Exception('요청이 너무 많아 일시적으로 차단되었습니다. 잠시 후 다시 시도해 주세요.');
       case 'operation-not-allowed':
         throw Exception('Firebase Authentication에서 이메일/비밀번호 로그인이 비활성화되어 있습니다.');
       case 'web-storage-unsupported':
-        throw Exception('이 브라우저 환경에서는 로그인 저장소를 사용할 수 없습니다.');
+        throw Exception('현재 브라우저 환경에서는 로그인 저장소를 사용할 수 없습니다.');
       default:
         final detail = e.message == null ? e.code : '${e.code}: ${e.message}';
         throw Exception('$action 중 Firebase 오류가 발생했습니다. [$detail]');
@@ -46,15 +50,16 @@ class FirebaseAuthRepository implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final nicknameSnapshot = await _firestore
-        .collection('users')
-        .where('nickname', isEqualTo: nickname)
-        .limit(1)
-        .get();
+    final nicknameRef = _firestore
+        .collection('nicknames')
+        .doc(_nicknameDocId(nickname));
+    final nicknameSnapshot = await nicknameRef.get();
 
-    if (nicknameSnapshot.docs.isNotEmpty) {
+    if (nicknameSnapshot.exists) {
       throw Exception('이미 사용 중인 닉네임입니다.');
     }
+
+    auth.User? firebaseUser;
 
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -62,7 +67,7 @@ class FirebaseAuthRepository implements AuthRepository {
         password: password,
       );
 
-      final firebaseUser = credential.user;
+      firebaseUser = credential.user;
 
       if (firebaseUser == null) {
         throw Exception('회원가입에 실패했습니다.');
@@ -75,19 +80,44 @@ class FirebaseAuthRepository implements AuthRepository {
         email: email,
       );
 
-      await _firestore.collection('users').doc(firebaseUser.uid).set({
-        ...user.toJson(),
-        'birthDate': '',
-        'gender': '',
-        'height': 0,
-        'weight': 0,
-        'diabetesType': '',
-        'profileImageUrl': '',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
+      await _firestore.runTransaction((transaction) async {
+        final latestNicknameSnapshot = await transaction.get(nicknameRef);
+
+        if (latestNicknameSnapshot.exists) {
+          throw Exception('이미 사용 중인 닉네임입니다.');
+        }
+
+        transaction.set(nicknameRef, {
+          'uid': firebaseUser!.uid,
+          'nickname': nickname,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        transaction.set(_firestore.collection('users').doc(firebaseUser.uid), {
+          ...user.toJson(),
+          'birthDate': '',
+          'gender': '',
+          'height': 0,
+          'weight': 0,
+          'diabetesType': '',
+          'profileImageUrl': '',
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
       });
     } on auth.FirebaseAuthException catch (e) {
       _throwAuthException('회원가입', e);
+    } catch (e) {
+      if (firebaseUser != null) {
+        try {
+          await firebaseUser.delete();
+        } catch (deleteError) {
+          debugPrint('[FirebaseAuth][signUpRollback] $deleteError');
+        }
+      }
+
+      throw e;
     }
   }
 
