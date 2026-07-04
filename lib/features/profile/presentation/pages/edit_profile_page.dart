@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dangdang/core/widgets/common/image_source_bottom_sheet.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_profile_repository.dart';
@@ -119,9 +118,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
         .child('profile_images')
         .child('${user.uid}.jpg');
 
-    await ref.putFile(
-      File(image.path),
-      SettableMetadata(contentType: 'image/jpeg'),
+    final bytes = await image.readAsBytes();
+
+    await ref.putData(
+      bytes,
+      SettableMetadata(contentType: image.mimeType ?? 'image/jpeg'),
     );
 
     return ref.getDownloadURL();
