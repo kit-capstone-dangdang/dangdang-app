@@ -5,6 +5,8 @@ class FirebaseAccountRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  String _nicknameDocId(String nickname) => nickname.trim().toLowerCase();
+
   Future<void> deleteAccount({required String currentPassword}) async {
     final user = _auth.currentUser;
 
@@ -20,9 +22,18 @@ class FirebaseAccountRepository {
     await user.reauthenticateWithCredential(credential);
 
     final uid = user.uid;
+    final userSnapshot = await _firestore.collection('users').doc(uid).get();
+    final nickname = userSnapshot.data()?['nickname']?.toString() ?? '';
 
     await _deleteMealRecords(uid);
     await _deleteBloodGlucoseRecords(uid);
+
+    if (nickname.trim().isNotEmpty) {
+      await _firestore
+          .collection('nicknames')
+          .doc(_nicknameDocId(nickname))
+          .delete();
+    }
 
     await _firestore.collection('users').doc(uid).delete();
 
@@ -31,7 +42,7 @@ class FirebaseAccountRepository {
 
   Future<void> _deleteMealRecords(String uid) async {
     final snapshot = await _firestore
-        .collection('meal_records')
+        .collection('meal_record')
         .where('uid', isEqualTo: uid)
         .get();
 
@@ -42,7 +53,7 @@ class FirebaseAccountRepository {
 
   Future<void> _deleteBloodGlucoseRecords(String uid) async {
     final snapshot = await _firestore
-        .collection('blood_glucose_records')
+        .collection('blood_glucose_record')
         .where('uid', isEqualTo: uid)
         .get();
 
