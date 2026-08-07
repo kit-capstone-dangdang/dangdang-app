@@ -54,6 +54,11 @@ class FoodItemCard extends StatelessWidget {
     final baseCalories = item.calories;
     final currentCalories = baseCalories * quantity;
     final unit = item.amountLabel.replaceAll(RegExp(r'[0-9.]'), '').trim();
+    final isMilliliterUnit = unit.toLowerCase() == 'ml';
+    final quantityText =
+        isMilliliterUnit
+            ? quantity.round().toString()
+            : quantity.toStringAsFixed(1);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -154,7 +159,11 @@ class FoodItemCard extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {
-                    if (quantity > 0.1) {
+                    if (isMilliliterUnit) {
+                      if (quantity.round() > 25) {
+                        onChanged((quantity.round() - 25).toDouble());
+                      }
+                    } else if (quantity > 0.1) {
                       onChanged(
                         double.parse((quantity - 0.1).toStringAsFixed(1)),
                       );
@@ -166,7 +175,7 @@ class FoodItemCard extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: '${quantity.toStringAsFixed(1)} ',
+                        text: '$quantityText ',
                         style: const TextStyle(
                           color: Colors.blue,
                           fontSize: 18,
@@ -185,9 +194,13 @@ class FoodItemCard extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    onChanged(
-                      double.parse((quantity + 0.1).toStringAsFixed(1)),
-                    );
+                    if (isMilliliterUnit) {
+                      onChanged((quantity.round() + 25).toDouble());
+                    } else {
+                      onChanged(
+                        double.parse((quantity + 0.1).toStringAsFixed(1)),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.add),
                 ),
