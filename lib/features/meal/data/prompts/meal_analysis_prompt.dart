@@ -58,6 +58,7 @@ $mealRecordsJson
 - 기록만 기반으로 분석
 - 의료 진단·약물 조언 금지
 - 식사 시간, 탄단지, 당류, 야식, 규칙성 중심
+- 간식도 식사 타입으로 함께 고려
 - patterns/recommendations 각 3~5개
 - 키는 patterns, recommendations만 사용
 - JSON만 반환

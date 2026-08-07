@@ -28,7 +28,7 @@ class MealRecordPage extends StatefulWidget {
 }
 
 class _MealRecordPageState extends State<MealRecordPage> {
-  static const List<String> _mealFilters = ['전체', '아침', '점심', '저녁', '야식'];
+  static const List<String> _mealFilters = ['전체', '아침', '점심', '저녁', '간식', '야식'];
 
   bool _isLoading = false;
   bool _isRangeExpanded = false;
