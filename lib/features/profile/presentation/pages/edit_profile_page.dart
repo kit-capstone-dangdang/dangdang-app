@@ -27,6 +27,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _birthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
+  bool _didSave = false;
+  String _initialName = '';
+  String _initialNickname = '';
+  String _initialBirthDate = '';
+  String _initialHeight = '';
+  String _initialWeight = '';
+  String _initialProfileImageUrl = '';
+  String _initialGender = '';
+  String _initialDiabetesType = '';
 
   String _email = '';
   String _profileImageUrl = '';
@@ -75,6 +84,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
         _selectedGender = gender.isEmpty ? '남성' : gender;
         _selectedDiabetesType = diabetesType.isEmpty ? '2형' : diabetesType;
+        _syncInitialValues();
         _isLoading = false;
       });
     } catch (e) {
@@ -87,6 +97,71 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  void _syncInitialValues() {
+    _initialName = _nameController.text.trim();
+    _initialNickname = _nicknameController.text.trim();
+    _initialBirthDate = _birthController.text.trim();
+    _initialHeight = _heightController.text.trim();
+    _initialWeight = _weightController.text.trim();
+    _initialProfileImageUrl = _profileImageUrl;
+    _initialGender = _selectedGender;
+    _initialDiabetesType = _selectedDiabetesType;
+  }
+
+  bool get _hasUnsavedChanges {
+    if (_isLoading || _didSave) {
+      return false;
+    }
+
+    return _initialName != _nameController.text.trim() ||
+        _initialNickname != _nicknameController.text.trim() ||
+        _initialBirthDate != _birthController.text.trim() ||
+        _initialHeight != _heightController.text.trim() ||
+        _initialWeight != _weightController.text.trim() ||
+        _initialProfileImageUrl != _profileImageUrl ||
+        _initialGender != _selectedGender ||
+        _initialDiabetesType != _selectedDiabetesType;
+  }
+
+  Future<bool> _showExitConfirmDialog() async {
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text('\uBCC0\uACBD \uC0AC\uD56D\uC774 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.'),
+          content: const Text('\uC815\uB9D0 \uB098\uAC00\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('\uCDE8\uC18C'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('\uB098\uAC00\uAE30'),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldLeave ?? false;
+  }
+  Future<bool> _handleBackNavigation() async {
+    if (!_hasUnsavedChanges) {
+      return true;
+    }
+
+    return _showExitConfirmDialog();
+  }
+
+  Future<void> _onBackPressed() async {
+    final shouldLeave = await _handleBackNavigation();
+
+    if (shouldLeave && mounted) {
+      Navigator.pop(context);
     }
   }
 
@@ -151,6 +226,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       setState(() {
         _profileImageUrl = imageUrl;
+        _syncInitialValues();
         _isUploadingImage = false;
       });
 
@@ -217,6 +293,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       if (!mounted) return;
 
+      _didSave = true;
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
@@ -250,10 +327,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
+    return WillPopScope(
+      onWillPop: _handleBackNavigation,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: CustomScrollView(
           slivers: [
             SliverAppBar(
               pinned: true,
@@ -267,9 +346,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               title: Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: _onBackPressed,
                     icon: const Icon(
                       Icons.arrow_back_ios_new_rounded,
                       color: Color(0xFF4B5563),
@@ -582,6 +659,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

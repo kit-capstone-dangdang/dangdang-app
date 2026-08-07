@@ -24,6 +24,12 @@ class _BloodSugarFormState extends State<BloodGlucoseForm> {
   final TextEditingController memoController = TextEditingController();
 
   final repository = FirebaseBloodSugarRepository();
+  bool _didSave = false;
+  String _initialSugar = '';
+  String _initialMemo = '';
+  String _initialSelectedType = '';
+  DateTime? _initialSelectedDate;
+  TimeOfDay? _initialSelectedTime;
 
   String selectedType = '식전';
   DateTime selectedDate = DateTime.now();
@@ -45,6 +51,67 @@ class _BloodSugarFormState extends State<BloodGlucoseForm> {
         hour: record.dateTime.hour,
         minute: record.dateTime.minute,
       );
+    }
+
+    _syncInitialValues();
+  }
+
+  void _syncInitialValues() {
+    _initialSugar = sugarController.text.trim();
+    _initialMemo = memoController.text;
+    _initialSelectedType = selectedType;
+    _initialSelectedDate = selectedDate;
+    _initialSelectedTime = selectedTime;
+  }
+
+  bool get _hasUnsavedChanges {
+    if (widget.initialRecord == null || _didSave) {
+      return false;
+    }
+
+    return _initialSugar != sugarController.text.trim() ||
+        _initialMemo != memoController.text ||
+        _initialSelectedType != selectedType ||
+        _initialSelectedDate != selectedDate ||
+        _initialSelectedTime != selectedTime;
+  }
+
+  Future<bool> _showExitConfirmDialog() async {
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text('\uBCC0\uACBD \uC0AC\uD56D\uC774 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.'),
+          content: const Text('\uC815\uB9D0 \uB098\uAC00\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('\uCDE8\uC18C'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('\uB098\uAC00\uAE30'),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldLeave ?? false;
+  }
+  Future<bool> _handleBackNavigation() async {
+    if (!_hasUnsavedChanges) {
+      return true;
+    }
+
+    return _showExitConfirmDialog();
+  }
+
+  Future<void> _onBackPressed() async {
+    final shouldLeave = await _handleBackNavigation();
+
+    if (shouldLeave && mounted) {
+      Navigator.pop(context);
     }
   }
 
@@ -90,16 +157,16 @@ class _BloodSugarFormState extends State<BloodGlucoseForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: _handleBackNavigation,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: _onBackPressed,
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.black,
@@ -483,6 +550,7 @@ class _BloodSugarFormState extends State<BloodGlucoseForm> {
                       }
 
                       if (context.mounted) {
+                        _didSave = true;
                         Navigator.pop(context);
                       }
                     },
@@ -510,6 +578,7 @@ class _BloodSugarFormState extends State<BloodGlucoseForm> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

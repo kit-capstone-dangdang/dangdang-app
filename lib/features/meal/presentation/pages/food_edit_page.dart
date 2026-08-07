@@ -38,12 +38,14 @@ class _FoodEditPageState extends State<FoodEditPage> {
   List<double> quantities = [];
   bool _isSaving = false;
   bool _isAddingFood = false;
+  bool _didSave = false;
   final Set<int> _refiningFoodIndices = <int>{};
 
   List<FoodItem> _baseFoods = [];
   late List<String> _lastRefinedNames;
   String? _networkImageUrl;
   XFile? _newImage;
+  String _initialEditSignature = '';
 
   @override
   void initState() {
@@ -106,6 +108,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
     }
 
     _lastRefinedNames = _baseFoods.map((f) => f.name).toList();
+    _initialEditSignature = _buildEditSignature();
   }
 
   String _amountLabelFromItem(Map<String, dynamic> item) {
@@ -146,6 +149,84 @@ class _FoodEditPageState extends State<FoodEditPage> {
 
   Map<String, double> get _currentTotalNutrition {
     return aggregateNutritionTotals(_buildFoodItems());
+  }
+  String _buildEditSignature() {
+    final buffer = StringBuffer()
+      ..write(selectedMeal)
+      ..write('|')
+      ..write(selectedDate?.toIso8601String() ?? '')
+      ..write('|')
+      ..write(selectedTime?.hour ?? '')
+      ..write(':')
+      ..write(selectedTime?.minute ?? '')
+      ..write('|')
+      ..write(_networkImageUrl ?? '')
+      ..write('|')
+      ..write(_newImage?.path ?? '');
+    for (int i = 0; i < _baseFoods.length; i++) {
+      final food = _baseFoods[i];
+      buffer
+        ..write('|')
+        ..write(food.name)
+        ..write('|')
+        ..write(food.amountLabel)
+        ..write('|')
+        ..write(food.servingCount)
+        ..write('|')
+        ..write(food.calories)
+        ..write('|')
+        ..write(food.carbohydrate)
+        ..write('|')
+        ..write(food.protein)
+        ..write('|')
+        ..write(food.fat)
+        ..write('|')
+        ..write(food.sugar)
+        ..write('|')
+        ..write(i < quantities.length ? quantities[i] : '');
+    }
+    return buffer.toString();
+  }
+  bool get _hasUnsavedChanges {
+    if (widget.originalRecord == null || _didSave) {
+      return false;
+    }
+    return _initialEditSignature != _buildEditSignature();
+  }
+  Future<bool> _showExitConfirmDialog() async {
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text('\uBCC0\uACBD \uC0AC\uD56D\uC774 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.'),
+          content: const Text('\uC815\uB9D0 \uB098\uAC00\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('\uCDE8\uC18C'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('\uB098\uAC00\uAE30'),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldLeave ?? false;
+  }
+  Future<bool> _handleBackNavigation() async {
+    if (!_hasUnsavedChanges) {
+      return true;
+    }
+    return _showExitConfirmDialog();
+  }
+  Future<void> _onBackPressed() async {
+    final shouldLeave = await _handleBackNavigation();
+    if (shouldLeave && mounted) {
+      Navigator.pop(context);
+    }
   }
 
   DateTime _buildSelectedDateTime() {
@@ -415,6 +496,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
 
       if (!mounted) return;
 
+      _didSave = true;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const MainShell(initialIndex: 2)),
@@ -466,8 +548,9 @@ class _FoodEditPageState extends State<FoodEditPage> {
   @override
   Widget build(BuildContext context) {
     final isEditMode = widget.originalRecord != null;
-
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _handleBackNavigation,
+      child: Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       body: SafeArea(
         child: CustomScrollView(
@@ -479,7 +562,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
               surfaceTintColor: Colors.white,
               toolbarHeight: 70,
               leading: IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _onBackPressed,
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
               title: Text(
@@ -821,6 +904,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
