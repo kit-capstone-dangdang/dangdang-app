@@ -3,6 +3,7 @@ import 'package:dangdang/features/auth/presentation/viewmodels/signup_view_model
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:dangdang/features/profile/presentation/widgets/profile_select_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -33,6 +34,7 @@ class SignupPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(signupViewModelProvider);
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFBFF),
@@ -66,7 +68,7 @@ class SignupPage extends ConsumerWidget {
               ),
               const SizedBox(height: 48),
               const Text(
-                '새로운 계정 만들기',
+                '새 계정 만들기',
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.bold,
@@ -76,7 +78,7 @@ class SignupPage extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                '당당 매니저와 함께 내 건강한 일상을 만들어보세요.',
+                '혈당 매니저와 함께 더 건강한\n내일을 만들어보세요!',
                 style: TextStyle(
                   fontSize: 18,
                   color: Color(0xFF6B7280),
@@ -105,7 +107,7 @@ class SignupPage extends ConsumerWidget {
                     const SizedBox(height: 12),
                     AuthTextField(
                       controller: viewModel.nicknameController,
-                      hintText: '사용하실 별명을 입력하세요',
+                      hintText: '닉네임을 입력해 주세요',
                       icon: Icons.edit_outlined,
                     ),
                     const SizedBox(height: 28),
@@ -135,10 +137,147 @@ class SignupPage extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 28),
+                    const AuthLabel(text: '생년월일'),
+                    const SizedBox(height: 12),
+                    AuthTextField(
+                      controller: viewModel.birthController,
+                      hintText: '생년월일을 선택해 주세요',
+                      icon: Icons.calendar_today,
+                      readOnly: true,
+                      suffixIcon: const Icon(
+                        Icons.calendar_today_outlined,
+                        color: Color(0xFFC4C6D0),
+                      ),
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime(2000),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+
+                        if (date == null) {
+                          return;
+                        }
+
+                        viewModel.updateBirthDate(
+                          '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                    const AuthLabel(text: '성계'),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 64,
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FB),
+                        borderRadius: BorderRadius.circular(26),
+                        border: Border.all(color: const Color(0xFFF0F2F5)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ProfileSelectChip(
+                              text: '남성',
+                              selected: viewModel.selectedGender == '남성',
+                              selectedColor: const Color(0xFF4F63F6),
+                              onTap: () {
+                                viewModel.selectGender('남성');
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: ProfileSelectChip(
+                              text: '여성',
+                              selected: viewModel.selectedGender == '여성',
+                              selectedColor: const Color(0xFFDC2626),
+                              onTap: () {
+                                viewModel.selectGender('여성');
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const AuthLabel(text: '키'),
+                              const SizedBox(height: 12),
+                              AuthTextField(
+                                controller: viewModel.heightController,
+                                hintText: 'ex) 175',
+                                keyboardType: TextInputType.number,
+                                suffixText: 'cm',
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const AuthLabel(text: '몸무게'),
+                              const SizedBox(height: 12),
+                              AuthTextField(
+                                controller: viewModel.weightController,
+                                hintText: 'ex) 70',
+                                keyboardType: TextInputType.number,
+                                suffixText: 'kg',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    const AuthLabel(text: '당뇨 유형'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: viewModel.diabetesTypes.asMap().entries.map((
+                        entry,
+                      ) {
+                        final index = entry.key;
+                        final type = entry.value;
+
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: index == viewModel.diabetesTypes.length - 1
+                                  ? 0
+                                  : 5,
+                            ),
+                            child: SizedBox(
+                              height: 46,
+                              child: ProfileSelectChip(
+                                text: type,
+                                selected:
+                                    viewModel.selectedDiabetesType == type,
+                                showBorderWhenUnselected: true,
+                                selectedColor: const Color(0xFF4F63F6),
+                                onTap: () {
+                                  viewModel.selectDiabetesType(type);
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                     const SizedBox(height: 40),
                     AuthButton(
                       text: viewModel.isSubmitting ? '가입 중..' : '회원가입 완료',
-                      onPressed: () => _signUp(context, ref),
+                      onPressed: viewModel.isSubmitting
+                          ? null
+                          : () => _signUp(context, ref),
                     ),
                   ],
                 ),
