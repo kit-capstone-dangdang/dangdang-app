@@ -1,6 +1,7 @@
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:dangdang/features/profile/presentation/providers/change_password_view_model_provider.dart';
 import 'package:dangdang/features/profile/presentation/viewmodels/change_password_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

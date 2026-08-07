@@ -1,11 +1,11 @@
-import 'package:dangdang/features/ai_chat/data/services/ai_chat_service.dart';
+import 'package:dangdang/features/ai_chat/data/datasources/ai_chat_service.dart';
 import 'package:dangdang/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
-import 'package:dangdang/features/blood_glucose/data/services/blood_glucose_ai_service.dart';
+import 'package:dangdang/features/blood_glucose/data/datasources/blood_glucose_ai_service.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
-import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
-import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
-import 'package:dangdang/features/meal/data/services/meal_image_storage_service.dart';
+import 'package:dangdang/features/meal/data/datasources/image_picker_service.dart';
+import 'package:dangdang/features/meal/data/datasources/meal_ai_service.dart';
+import 'package:dangdang/features/meal/data/datasources/meal_image_storage_service.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_account_repository.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_profile_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';

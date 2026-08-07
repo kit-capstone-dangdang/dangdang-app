@@ -1,5 +1,5 @@
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
-import 'package:dangdang/features/ai_chat/data/prompts/ai_chat_prompt.dart';
+import 'package:dangdang/features/ai_chat/data/datasources/ai_chat_prompt.dart';
 import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_message.dart';
 import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_reply.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';

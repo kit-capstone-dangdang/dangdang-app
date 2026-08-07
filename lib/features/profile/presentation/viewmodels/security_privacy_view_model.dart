@@ -1,9 +1,7 @@
-import 'package:dangdang/core/presentation/providers/app_providers.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_account_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SecurityPrivacyViewModel extends ChangeNotifier {
   SecurityPrivacyViewModel(this._accountRepository);
@@ -67,13 +65,3 @@ class SecurityPrivacyViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-
-final securityPrivacyViewModelProvider = ChangeNotifierProvider.autoDispose<
-  SecurityPrivacyViewModel
->((ref) {
-  final viewModel = SecurityPrivacyViewModel(
-    ref.watch(accountRepositoryProvider),
-  );
-  ref.onDispose(viewModel.dispose);
-  return viewModel;
-});

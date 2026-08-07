@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/core/utils/parsers/value_parser.dart';
-import 'package:dangdang/features/meal/data/prompts/food_refine_prompt.dart';
-import 'package:dangdang/features/meal/data/prompts/meal_analysis_prompt.dart';
+import 'package:dangdang/features/meal/data/datasources/food_refine_prompt.dart';
+import 'package:dangdang/features/meal/data/datasources/meal_analysis_prompt.dart';
 import 'package:dangdang/features/meal/domain/entities/food_item.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
 import 'package:firebase_auth/firebase_auth.dart';

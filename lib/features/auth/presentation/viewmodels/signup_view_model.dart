@@ -1,8 +1,6 @@
 import 'package:dangdang/features/auth/data/repositories/firebase_auth_repository.dart';
-import 'package:dangdang/core/presentation/providers/app_providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SignupViewModel extends ChangeNotifier {
   SignupViewModel(this._authRepository);
@@ -66,11 +64,3 @@ class SignupViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-
-final signupViewModelProvider = ChangeNotifierProvider.autoDispose<
-  SignupViewModel
->((ref) {
-  final viewModel = SignupViewModel(ref.watch(authRepositoryProvider));
-  ref.onDispose(viewModel.dispose);
-  return viewModel;
-});

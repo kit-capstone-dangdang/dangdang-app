@@ -1,8 +1,6 @@
-import 'package:dangdang/core/presentation/providers/app_providers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChangePasswordViewModel extends ChangeNotifier {
   ChangePasswordViewModel(this._auth);
@@ -108,11 +106,3 @@ class ChangePasswordViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-
-final changePasswordViewModelProvider = ChangeNotifierProvider.autoDispose<
-  ChangePasswordViewModel
->((ref) {
-  final viewModel = ChangePasswordViewModel(ref.watch(firebaseAuthProvider));
-  ref.onDispose(viewModel.dispose);
-  return viewModel;
-});

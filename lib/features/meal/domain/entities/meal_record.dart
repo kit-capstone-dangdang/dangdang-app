@@ -1,6 +1,6 @@
 import 'package:dangdang/core/utils/parsers/value_parser.dart';
 import 'package:dangdang/features/meal/domain/entities/food_item.dart';
-import 'package:dangdang/features/meal/domain/services/nutrition_aggregator.dart';
+import 'package:dangdang/features/meal/domain/usecases/nutrition_aggregator.dart';
 
 class MealRecord {
   final String id;

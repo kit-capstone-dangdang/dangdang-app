@@ -1,3 +1,4 @@
+import 'package:dangdang/features/auth/presentation/providers/signup_view_model_provider.dart';
 import 'package:dangdang/features/auth/presentation/viewmodels/signup_view_model.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
