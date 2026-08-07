@@ -123,6 +123,38 @@ class _FoodEditPageState extends State<FoodEditPage> {
     return '1인분';
   }
 
+  bool _isMilliliterAmountLabel(String amountLabel) {
+    final unit = amountLabel.replaceAll(RegExp(r'[0-9.]'), '').trim();
+    return unit.toLowerCase() == 'ml';
+  }
+
+  double _milliliterQuantity(FoodItem food) {
+    if (!_isMilliliterAmountLabel(food.amountLabel)) {
+      return 0;
+    }
+
+    return parseServingCount(
+      food.servingCount,
+      amountLabel: food.amountLabel,
+      defaultValue: 1.0,
+    );
+  }
+
+  FoodItem _normalizeMilliliterFood(FoodItem food, double milliliterQuantity) {
+    if (milliliterQuantity <= 0) {
+      return food;
+    }
+
+    return food.copyWith(
+      servingCount: 1.0,
+      calories: food.calories / milliliterQuantity,
+      carbohydrate: food.carbohydrate / milliliterQuantity,
+      protein: food.protein / milliliterQuantity,
+      fat: food.fat / milliliterQuantity,
+      sugar: food.sugar / milliliterQuantity,
+    );
+  }
+
   Widget _buildPickedImage(XFile image) {
     return FutureBuilder<Uint8List>(
       future: image.readAsBytes(),
@@ -277,14 +309,23 @@ class _FoodEditPageState extends State<FoodEditPage> {
         throw Exception('음식 정보를 불러오지 못했습니다.');
       }
 
-      final updatedFood = updatedItems.first.copyWith(
-        servingCount: previousFood.servingCount,
-      );
+      final refinedFood = updatedItems.first;
+      final milliliterQuantity = _milliliterQuantity(refinedFood);
+      final wasMilliliter = _isMilliliterAmountLabel(previousFood.amountLabel);
+      final updatedFood =
+          milliliterQuantity > 0
+              ? _normalizeMilliliterFood(refinedFood, milliliterQuantity)
+              : refinedFood.copyWith(servingCount: previousFood.servingCount);
+      final updatedQuantity =
+          milliliterQuantity > 0
+              ? milliliterQuantity
+              : (wasMilliliter ? 1.0 : quantities[index]);
 
       if (!mounted) return;
 
       setState(() {
         _baseFoods[index] = updatedFood;
+        quantities[index] = updatedQuantity;
         _lastRefinedNames[index] = updatedFood.name;
         _refiningFoodIndices.remove(index);
       });
@@ -322,13 +363,19 @@ class _FoodEditPageState extends State<FoodEditPage> {
         throw Exception('음식 정보를 불러오지 못했습니다.');
       }
 
-      final addedFood = updatedItems.first.copyWith(servingCount: 1.0);
+      final refinedFood = updatedItems.first;
+      final milliliterQuantity = _milliliterQuantity(refinedFood);
+      final addedFood =
+          milliliterQuantity > 0
+              ? _normalizeMilliliterFood(refinedFood, milliliterQuantity)
+              : refinedFood.copyWith(servingCount: 1.0);
+      final addedQuantity = milliliterQuantity > 0 ? milliliterQuantity : 1.0;
 
       if (!mounted) return;
 
       setState(() {
         _baseFoods.add(addedFood);
-        quantities.add(1.0);
+        quantities.add(addedQuantity);
         _lastRefinedNames.add(addedFood.name);
         _isAddingFood = false;
       });

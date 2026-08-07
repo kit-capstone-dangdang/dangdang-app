@@ -28,6 +28,9 @@ const mealAnalysisPrompt = '''
 - amountLabel과 servingCount는 서로 같은 양을 가리켜야 해
 - 영양값은 servingCount 전체 기준 총량으로 숫자만 추정
 - 가공식품, 국물, 소스, 디저트, 음료 특성 반영
+- 음료는 반드시 ml 단위 amountLabel을 사용해. 예: 콜라 500ml, 우유 200ml, 주스 350ml
+- 음료는 1인분, 1팩, 1개, 1잔 같은 개수 단위로 반환하지 마
+- 음료의 servingCount는 amountLabel의 ml 숫자와 같은 값을 사용해
 - JSON만 반환
 ''';
 
