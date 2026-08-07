@@ -131,6 +131,45 @@ class _MealRecordPageState extends State<MealRecordPage> {
     );
   }
 
+  String _ratingLabel(double rating) {
+    final filledStars = rating.floor();
+    final stars =
+        (List.filled(filledStars, '★').join()) +
+        (List.filled(5 - filledStars, '☆').join());
+    return '$stars ${rating.toStringAsFixed(1)} / 5.0';
+  }
+
+  Color _ratingColor(double rating) {
+    if (rating <= 2.0) {
+      return const Color(0xFFE53935);
+    }
+    if (rating <= 3.5) {
+      return const Color(0xFFF4B400);
+    }
+    return const Color(0xFF34A853);
+  }
+
+  Widget _buildRatingView(double rating) {
+    final ratingColor = _ratingColor(rating);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: ratingColor.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ratingColor.withOpacity(0.24)),
+      ),
+      child: Text(
+        _ratingLabel(rating),
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          color: ratingColor,
+        ),
+      ),
+    );
+  }
+
   void _showEmptyAnalysisSnackBar() {
     ScaffoldMessenger.of(
       context,
@@ -169,6 +208,8 @@ class _MealRecordPageState extends State<MealRecordPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildRatingView(result.rating),
+                const SizedBox(height: 24),
                 Row(
                   children: [
                     const Icon(
