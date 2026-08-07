@@ -1,119 +1,38 @@
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dangdang/features/profile/presentation/viewmodels/change_password_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChangePasswordPage extends StatefulWidget {
+class ChangePasswordPage extends ConsumerWidget {
   const ChangePasswordPage({super.key});
 
-  @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
-}
+  Future<void> _changePassword(BuildContext context, WidgetRef ref) async {
+    final message = await ref.read(changePasswordViewModelProvider).changePassword();
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  final TextEditingController _currentPasswordController =
-      TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-
-  bool _isLoading = false;
-  bool _obscureCurrentPassword = true;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
-
-  @override
-  void dispose() {
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _changePassword() async {
-    if (_isLoading) return;
-
-    final currentPassword = _currentPasswordController.text.trim();
-    final newPassword = _newPasswordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
-
-    if (currentPassword.isEmpty ||
-        newPassword.isEmpty ||
-        confirmPassword.isEmpty) {
-      _showSnackBar('모든 항목을 입력해주세요.');
+    if (!context.mounted) {
       return;
     }
 
-    if (newPassword.length < 6) {
-      _showSnackBar('새 비밀번호는 6자 이상이어야 합니다.');
-      return;
-    }
-
-    if (newPassword != confirmPassword) {
-      _showSnackBar('새 비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user == null || user.email == null) {
-        throw Exception('로그인이 필요합니다.');
-      }
-
-      final credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: currentPassword,
-      );
-
-      await user.reauthenticateWithCredential(credential);
-      await user.updatePassword(newPassword);
-
-      if (!mounted) return;
-
+    if (message != null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('비밀번호가 변경되었습니다.')));
-
-      Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        _showSnackBar('현재 비밀번호가 올바르지 않습니다.');
-      } else if (e.code == 'weak-password') {
-        _showSnackBar('새 비밀번호가 너무 약합니다.');
-      } else if (e.code == 'requires-recent-login') {
-        _showSnackBar('보안을 위해 다시 로그인한 뒤 시도해주세요.');
-      } else {
-        _showSnackBar('비밀번호 변경 중 오류가 발생했습니다.');
-      }
-    } catch (e) {
-      _showSnackBar(e.toString());
-    } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
+      ).showSnackBar(SnackBar(content: Text(message)));
+      return;
     }
-  }
-
-  void _showSnackBar(String message) {
-    if (!mounted) return;
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).showSnackBar(const SnackBar(content: Text('비밀번호가 변경되었습니다.')));
+    Navigator.pop(context);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     const primaryColor = Color(0xFF4F63F6);
     final textTheme = Theme.of(context).textTheme;
+    final viewModel = ref.watch(changePasswordViewModelProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -203,7 +122,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           ),
                           const SizedBox(height: 18),
                           Text(
-                            '안전을 위해 정기적으로 비밀번호를 변경해주세요.',
+                            '안전을 위해 정기적으로 비밀번호를 변경해 주세요.',
                             style: textTheme.titleMedium?.copyWith(
                               color: const Color(0xFF9CA3AF),
                               height: 1.4,
@@ -213,19 +132,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           const AuthLabel(text: '현재 비밀번호'),
                           const SizedBox(height: 10),
                           AuthTextField(
-                            controller: _currentPasswordController,
+                            controller: viewModel.currentPasswordController,
                             hintText: '현재 비밀번호 입력',
                             icon: Icons.lock_outline,
-                            obscureText: _obscureCurrentPassword,
+                            obscureText: viewModel.obscureCurrentPassword,
                             suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _obscureCurrentPassword =
-                                      !_obscureCurrentPassword;
-                                });
-                              },
+                              onPressed: viewModel.toggleCurrentPasswordVisibility,
                               icon: Icon(
-                                _obscureCurrentPassword
+                                viewModel.obscureCurrentPassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 color: const Color(0xFFC4C6D0),
@@ -238,18 +152,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           const AuthLabel(text: '새 비밀번호'),
                           const SizedBox(height: 10),
                           AuthTextField(
-                            controller: _newPasswordController,
-                            hintText: '새 비밀번호 입력 (6자 이상)',
+                            controller: viewModel.newPasswordController,
+                            hintText: '새 비밀번호 입력 (6자리 이상)',
                             icon: Icons.lock_outline,
-                            obscureText: _obscureNewPassword,
+                            obscureText: viewModel.obscureNewPassword,
                             suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _obscureNewPassword = !_obscureNewPassword;
-                                });
-                              },
+                              onPressed: viewModel.toggleNewPasswordVisibility,
                               icon: Icon(
-                                _obscureNewPassword
+                                viewModel.obscureNewPassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 color: const Color(0xFFC4C6D0),
@@ -260,19 +170,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           const AuthLabel(text: '새 비밀번호 확인'),
                           const SizedBox(height: 10),
                           AuthTextField(
-                            controller: _confirmPasswordController,
+                            controller: viewModel.confirmPasswordController,
                             hintText: '새 비밀번호 다시 입력',
                             icon: Icons.check_circle_outline,
-                            obscureText: _obscureConfirmPassword,
+                            obscureText: viewModel.obscureConfirmPassword,
                             suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _obscureConfirmPassword =
-                                      !_obscureConfirmPassword;
-                                });
-                              },
+                              onPressed:
+                                  viewModel.toggleConfirmPasswordVisibility,
                               icon: Icon(
-                                _obscureConfirmPassword
+                                viewModel.obscureConfirmPassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 color: const Color(0xFFC4C6D0),
@@ -298,7 +204,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       child: SizedBox(
                         height: 74,
                         child: OutlinedButton(
-                          onPressed: _isLoading
+                          onPressed: viewModel.isLoading
                               ? null
                               : () {
                                   Navigator.pop(context);
@@ -327,8 +233,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       child: SizedBox(
                         height: 74,
                         child: AuthButton(
-                          text: _isLoading ? '변경 중...' : '비밀번호 변경',
-                          onPressed: _changePassword,
+                          text: viewModel.isLoading
+                              ? '변경 중..'
+                              : '비밀번호 변경',
+                          onPressed: () => _changePassword(context, ref),
                         ),
                       ),
                     ),

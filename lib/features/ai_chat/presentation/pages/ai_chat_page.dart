@@ -1,152 +1,31 @@
-import 'package:dangdang/features/ai_chat/data/services/ai_chat_service.dart';
 import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_message.dart';
-import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_reply.dart';
+import 'package:dangdang/features/ai_chat/presentation/viewmodels/ai_chat_view_model.dart';
 import 'package:dangdang/features/ai_chat/presentation/widgets/ai_chat_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AiChatPage extends StatefulWidget {
+class AiChatPage extends ConsumerStatefulWidget {
   const AiChatPage({super.key});
 
   @override
-  State<AiChatPage> createState() => _AiChatPageState();
+  ConsumerState<AiChatPage> createState() => _AiChatPageState();
 }
 
-class _AiChatPageState extends State<AiChatPage> {
-  final AiChatService _aiChatService = AiChatService();
-  final TextEditingController _messageController = TextEditingController();
+class _AiChatPageState extends ConsumerState<AiChatPage> {
   final ScrollController _scrollController = ScrollController();
-
-  final List<String> _starterQuestions = const [
-    '혈당 패턴 분석해줘',
-    '탄수화물 섭취 진단해줘',
-    '공복 혈당 관리법은?',
-  ];
-
-  late List<AiChatMessage> _messages;
-  late List<String> _visibleSuggestions;
-
-  bool _isLoading = false;
-  String? _selectedSuggestion;
-  int _conversationVersion = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _messages = [_buildWelcomeMessage()];
-    _visibleSuggestions = List<String>.from(_starterQuestions);
-  }
 
   @override
   void dispose() {
-    _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  AiChatMessage _buildWelcomeMessage() {
-    return AiChatMessage(
-      text: '안녕하세요! 혈당 관리나 식단에 대해 궁금한 점이 있으신가요? 최근 기록을 함께 참고해서 맞춤형으로 도와드릴게요.',
-      sender: AiChatSender.assistant,
-      createdAt: DateTime.now(),
-    );
-  }
-
-  void _resetConversation() {
-    _conversationVersion++;
-    _messageController.clear();
-    FocusScope.of(context).unfocus();
-
-    setState(() {
-      _isLoading = false;
-      _selectedSuggestion = null;
-      _messages = [_buildWelcomeMessage()];
-      _visibleSuggestions = List<String>.from(_starterQuestions);
-    });
-
-    _scrollToBottom();
-  }
-
-  Future<void> _sendTextMessage() async {
-    final text = _messageController.text.trim();
-    if (text.isEmpty || _isLoading) return;
-
-    _messageController.clear();
-    _selectedSuggestion = null;
-    await _sendQuestion(text);
-  }
-
-  Future<void> _sendSuggestionMessage(String suggestion) async {
-    if (_isLoading) return;
-
-    setState(() {
-      _selectedSuggestion = suggestion;
-    });
-
-    await _sendQuestion(suggestion);
-  }
-
-  Future<void> _sendQuestion(String text) async {
-    final userMessage = AiChatMessage(
-      text: text,
-      sender: AiChatSender.user,
-      createdAt: DateTime.now(),
-    );
-
-    final requestVersion = _conversationVersion;
-
-    setState(() {
-      _isLoading = true;
-      _messages = [..._messages, userMessage];
-    });
-
-    _scrollToBottom();
-
-    try {
-      final AiChatReply reply = await _aiChatService.askQuestion(
-        question: text,
-        conversation: _messages,
-      );
-
-      if (!mounted || requestVersion != _conversationVersion) return;
-
-      setState(() {
-        _isLoading = false;
-        _messages = [
-          ..._messages,
-          AiChatMessage(
-            text: reply.answer,
-            sender: AiChatSender.assistant,
-            createdAt: DateTime.now(),
-          ),
-        ];
-        _visibleSuggestions = reply.suggestedQuestions.isEmpty
-            ? List<String>.from(_starterQuestions)
-            : reply.suggestedQuestions;
-      });
-
-      _scrollToBottom();
-    } catch (_) {
-      if (!mounted || requestVersion != _conversationVersion) return;
-
-      setState(() {
-        _isLoading = false;
-        _messages = [
-          ..._messages,
-          AiChatMessage(
-            text: '답변을 불러오는 중 문제가 생겼어요. 잠시 후 다시 질문해 주세요.',
-            sender: AiChatSender.assistant,
-            createdAt: DateTime.now(),
-          ),
-        ];
-      });
-
-      _scrollToBottom();
-    }
-  }
-
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
+      if (!_scrollController.hasClients) {
+        return;
+      }
+
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 250),
@@ -155,13 +34,25 @@ class _AiChatPageState extends State<AiChatPage> {
     });
   }
 
-  bool get _hasUserConversation {
-    return _messages.any((message) => message.sender == AiChatSender.user);
+  Future<void> _sendTextMessage() async {
+    await ref.read(aiChatViewModelProvider).sendTextMessage();
+    _scrollToBottom();
+  }
+
+  Future<void> _sendSuggestionMessage(String suggestion) async {
+    await ref.read(aiChatViewModelProvider).sendSuggestionMessage(suggestion);
+    _scrollToBottom();
+  }
+
+  void _resetConversation() {
+    FocusScope.of(context).unfocus();
+    ref.read(aiChatViewModelProvider).resetConversation();
+    _scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
-    final canSend = _messageController.text.trim().isNotEmpty && !_isLoading;
+    final viewModel = ref.watch(aiChatViewModelProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -176,13 +67,13 @@ class _AiChatPageState extends State<AiChatPage> {
                 children: [
                   _buildWarningBanner(),
                   const SizedBox(height: 18),
-                  ..._messages.map(
+                  ...viewModel.messages.map(
                     (message) => Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: AiChatBubble(message: message),
                     ),
                   ),
-                  if (_isLoading)
+                  if (viewModel.isLoading)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.symmetric(
@@ -201,7 +92,7 @@ class _AiChatPageState extends State<AiChatPage> {
                         ],
                       ),
                       child: const Text(
-                        '답변을 정리하고 있어요...',
+                        '답변을 정리하고 있어요..',
                         style: TextStyle(
                           color: Color(0xFF667085),
                           fontSize: 14,
@@ -209,14 +100,14 @@ class _AiChatPageState extends State<AiChatPage> {
                         ),
                       ),
                     ),
-                  if (!_isLoading) ...[
+                  if (!viewModel.isLoading) ...[
                     const SizedBox(height: 4),
-                    _buildSuggestionSection(),
+                    _buildSuggestionSection(viewModel),
                   ],
                 ],
               ),
             ),
-            _buildComposer(canSend),
+            _buildComposer(viewModel),
           ],
         ),
       ),
@@ -267,7 +158,7 @@ class _AiChatPageState extends State<AiChatPage> {
                       SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          '전문 혈당 분석 시스템 가동중',
+                          '전문 혈당 분석 어시스턴트 가동중',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -334,7 +225,7 @@ class _AiChatPageState extends State<AiChatPage> {
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'AI 상담 내용은 건강관리 참고용입니다. 증상이 있거나 약물, 치료 판단이 필요한 경우에는 반드시 의료진과 상담해 주세요.',
+              'AI 상담 내용은 건강관리 참고용입니다. 증상이나 치료 판단이 필요한 경우에는 반드시 의료진과 상담해 주세요.',
               style: TextStyle(
                 color: Color(0xFF7A5A00),
                 fontSize: 12,
@@ -348,14 +239,14 @@ class _AiChatPageState extends State<AiChatPage> {
     );
   }
 
-  Widget _buildSuggestionSection() {
-    if (_visibleSuggestions.isEmpty) {
+  Widget _buildSuggestionSection(AiChatViewModel viewModel) {
+    if (viewModel.visibleSuggestions.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final title = _hasUserConversation
-        ? '이어서 이런 것도 물어볼 수 있어요.'
-        : '어떻게 질문해야 할지 모르겠다면 아래 예시를 선택해 보세요.';
+    final title = viewModel.hasUserConversation
+        ? '이어서 이런 것도 물어볼 수 있어요'
+        : '어떻게 질문해야 좋을지 모르겠다면 아래 예시를 눌러보세요';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,18 +261,18 @@ class _AiChatPageState extends State<AiChatPage> {
           ),
         ),
         const SizedBox(height: 12),
-        ..._visibleSuggestions.map(
+        ...viewModel.visibleSuggestions.map(
           (question) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: _buildSuggestionChip(question),
+            child: _buildSuggestionChip(viewModel, question),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSuggestionChip(String question) {
-    final isSelected = _selectedSuggestion == question;
+  Widget _buildSuggestionChip(AiChatViewModel viewModel, String question) {
+    final isSelected = viewModel.selectedSuggestion == question;
 
     return GestureDetector(
       onTap: () => _sendSuggestionMessage(question),
@@ -413,7 +304,7 @@ class _AiChatPageState extends State<AiChatPage> {
     );
   }
 
-  Widget _buildComposer(bool canSend) {
+  Widget _buildComposer(AiChatViewModel viewModel) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
       decoration: const BoxDecoration(
@@ -437,8 +328,7 @@ class _AiChatPageState extends State<AiChatPage> {
           children: [
             Expanded(
               child: TextField(
-                controller: _messageController,
-                onChanged: (_) => setState(() {}),
+                controller: viewModel.messageController,
                 onSubmitted: (_) => _sendTextMessage(),
                 minLines: 1,
                 maxLines: 4,
@@ -447,7 +337,7 @@ class _AiChatPageState extends State<AiChatPage> {
                   fontWeight: FontWeight.w500,
                 ),
                 decoration: const InputDecoration(
-                  hintText: '식단, 수면, 혈당에 대해 무엇이든 물어보세요',
+                  hintText: '식단, 생활, 혈당 등 어떤 것이든 물어보세요',
                   border: InputBorder.none,
                   hintStyle: TextStyle(
                     color: Color(0xFF98A2B3),
@@ -459,12 +349,12 @@ class _AiChatPageState extends State<AiChatPage> {
             ),
             const SizedBox(width: 8),
             GestureDetector(
-              onTap: canSend ? _sendTextMessage : null,
+              onTap: viewModel.canSend ? _sendTextMessage : null,
               child: Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: canSend
+                  color: viewModel.canSend
                       ? const Color(0xFFDEE5FF)
                       : const Color(0xFFF0F2F7),
                   borderRadius: BorderRadius.circular(16),
@@ -472,7 +362,7 @@ class _AiChatPageState extends State<AiChatPage> {
                 child: Icon(
                   Icons.send_rounded,
                   size: 22,
-                  color: canSend
+                  color: viewModel.canSend
                       ? const Color(0xFF7A8AEF)
                       : const Color(0xFFB7BFCC),
                 ),

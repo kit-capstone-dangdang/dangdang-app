@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dangdang/core/widgets/common/custom_card.dart';
-import 'package:dangdang/core/widgets/common/custom_icon.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_card.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_icon.dart';
 
 class MealRecordCard extends StatelessWidget {
   final String mealType;

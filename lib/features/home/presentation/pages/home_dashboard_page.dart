@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dangdang/core/widgets/common/image_source_bottom_sheet.dart';
+import 'package:dangdang/core/presentation/widgets/common/image_source_bottom_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:dangdang/core/widgets/common/custom_card.dart';
-import 'package:dangdang/core/widgets/common/custom_icon.dart';
-import 'package:dangdang/core/widgets/common/state_views.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_card.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_icon.dart';
+import 'package:dangdang/core/presentation/widgets/common/state_views.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
@@ -17,7 +17,7 @@ import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_re
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
 import 'package:dangdang/features/profile/presentation/pages/my_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
-import 'package:dangdang/core/widgets/common/profile_avatar.dart';
+import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});

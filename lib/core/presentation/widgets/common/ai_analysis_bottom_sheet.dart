@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dangdang/core/widgets/common/state_views.dart';
+import 'package:dangdang/core/presentation/widgets/common/state_views.dart';
 
 class AiAnalysisBottomSheet<T> extends StatefulWidget {
   final Future<T> analysisFuture;

@@ -1,5 +1,5 @@
-import 'package:dangdang/core/widgets/common/custom_card.dart';
-import 'package:dangdang/core/widgets/common/custom_icon.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_card.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_icon.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
 import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';

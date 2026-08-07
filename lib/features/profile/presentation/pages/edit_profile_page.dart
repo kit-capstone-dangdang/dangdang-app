@@ -1,4 +1,4 @@
-import 'package:dangdang/core/widgets/common/image_source_bottom_sheet.dart';
+import 'package:dangdang/core/presentation/widgets/common/image_source_bottom_sheet.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_profile_repository.dart';
 import 'package:dangdang/features/profile/presentation/widgets/profile_form_card.dart';
@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dangdang/core/widgets/common/profile_avatar.dart';
+import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
 import 'package:dangdang/features/profile/presentation/pages/change_password_page.dart';
 
 class EditProfilePage extends StatefulWidget {

@@ -1,95 +1,49 @@
 import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
-import 'package:dangdang/features/profile/data/repositories/firebase_account_repository.dart';
+import 'package:dangdang/features/profile/presentation/viewmodels/security_privacy_view_model.dart';
 import 'package:dangdang/features/profile/presentation/widgets/security_privacy_menu_item.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SecurityPrivacyPage extends StatefulWidget {
+class SecurityPrivacyPage extends ConsumerWidget {
   const SecurityPrivacyPage({super.key});
 
-  @override
-  State<SecurityPrivacyPage> createState() => _SecurityPrivacyPageState();
-}
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    final message = await ref.read(securityPrivacyViewModelProvider).deleteAccount();
 
-class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
-  final FirebaseAccountRepository _accountRepository =
-      FirebaseAccountRepository();
-
-  final TextEditingController _passwordController = TextEditingController();
-
-  bool _isDeleting = false;
-  bool _obscurePassword = true;
-
-  @override
-  void dispose() {
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _deleteAccount() async {
-    if (_isDeleting) return;
-
-    final currentPassword = _passwordController.text.trim();
-
-    if (currentPassword.isEmpty) {
-      _showSnackBar('현재 비밀번호를 입력해주세요.');
+    if (!context.mounted) {
       return;
     }
 
-    setState(() {
-      _isDeleting = true;
-    });
-
-    try {
-      await _accountRepository.deleteAccount(currentPassword: currentPassword);
-
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
+    if (message != null) {
+      ScaffoldMessenger.of(
         context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-        (route) => false,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        _showSnackBar('현재 비밀번호가 올바르지 않습니다.');
-      } else if (e.code == 'requires-recent-login') {
-        _showSnackBar('보안을 위해 다시 로그인한 뒤 시도해주세요.');
-      } else {
-        _showSnackBar('회원탈퇴 중 오류가 발생했습니다.');
-      }
-    } catch (e) {
-      _showSnackBar(e.toString());
-    } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _isDeleting = false;
-      });
+      ).showSnackBar(SnackBar(content: Text(message)));
+      return;
     }
-  }
 
-  void _showSnackBar(String message) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(
+    Navigator.pushAndRemoveUntil(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
-    _passwordController.clear();
+  void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.read(securityPrivacyViewModelProvider);
+    viewModel.clearPassword();
 
     final textTheme = Theme.of(context).textTheme;
 
     showDialog<void>(
       context: context,
-      barrierDismissible: !_isDeleting,
+      barrierDismissible: !viewModel.isDeleting,
       barrierColor: Colors.black.withOpacity(0.6),
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final dialogViewModel = ref.watch(securityPrivacyViewModelProvider);
+
             return Dialog(
               backgroundColor: Colors.white,
               insetPadding: const EdgeInsets.symmetric(horizontal: 30),
@@ -144,18 +98,14 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
                       ),
                       const SizedBox(height: 28),
                       AuthTextField(
-                        controller: _passwordController,
+                        controller: dialogViewModel.passwordController,
                         hintText: '현재 비밀번호 입력',
                         icon: Icons.lock_outline,
-                        obscureText: _obscurePassword,
+                        obscureText: dialogViewModel.obscurePassword,
                         suffixIcon: IconButton(
-                          onPressed: () {
-                            setDialogState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
+                          onPressed: dialogViewModel.toggleObscurePassword,
                           icon: Icon(
-                            _obscurePassword
+                            dialogViewModel.obscurePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
                             color: const Color(0xFFC4C6D0),
@@ -169,7 +119,7 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
                             child: SizedBox(
                               height: 74,
                               child: OutlinedButton(
-                                onPressed: _isDeleting
+                                onPressed: dialogViewModel.isDeleting
                                     ? null
                                     : () {
                                         Navigator.pop(dialogContext);
@@ -198,10 +148,10 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
                             child: SizedBox(
                               height: 74,
                               child: ElevatedButton(
-                                onPressed: _isDeleting
+                                onPressed: dialogViewModel.isDeleting
                                     ? null
                                     : () async {
-                                        await _deleteAccount();
+                                        await _deleteAccount(context, ref);
                                       },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFEF4444),
@@ -212,7 +162,9 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
                                   ),
                                 ),
                                 child: Text(
-                                  _isDeleting ? '탈퇴 중...' : '탈퇴하기',
+                                  dialogViewModel.isDeleting
+                                      ? '탈퇴 중..'
+                                      : '탈퇴하기',
                                   style: textTheme.titleMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,
@@ -235,7 +187,7 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -298,21 +250,19 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
                       ),
                       child: Column(
                         children: [
-                          SecurityPrivacyMenuItem(
+                          const SecurityPrivacyMenuItem(
                             icon: Icons.verified_user_outlined,
                             title: '개인정보 처리방침',
-                            iconColor: const Color(0xFF9CA3AF),
-                            backgroundColor: const Color(0xFFF9FAFB),
-                            textColor: const Color(0xFF1F2937),
-                            onTap: () {},
+                            iconColor: Color(0xFF9CA3AF),
+                            backgroundColor: Color(0xFFF9FAFB),
+                            textColor: Color(0xFF1F2937),
                           ),
-                          SecurityPrivacyMenuItem(
+                          const SecurityPrivacyMenuItem(
                             icon: Icons.description_outlined,
                             title: '이용약관',
-                            iconColor: const Color(0xFF9CA3AF),
-                            backgroundColor: const Color(0xFFF9FAFB),
-                            textColor: const Color(0xFF1F2937),
-                            onTap: () {},
+                            iconColor: Color(0xFF9CA3AF),
+                            backgroundColor: Color(0xFFF9FAFB),
+                            textColor: Color(0xFF1F2937),
                           ),
                           SecurityPrivacyMenuItem(
                             icon: Icons.person_remove_alt_1_outlined,
@@ -321,7 +271,7 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
                             backgroundColor: const Color(0xFFFFF1F2),
                             textColor: const Color(0xFFDC2626),
                             onTap: () {
-                              _showDeleteAccountDialog(context);
+                              _showDeleteAccountDialog(context, ref);
                             },
                           ),
                         ],

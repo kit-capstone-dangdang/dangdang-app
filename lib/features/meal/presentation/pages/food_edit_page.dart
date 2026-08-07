@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:dangdang/app/navigation/main_shell.dart';
+import 'package:dangdang/app/presentation/navigation/main_shell.dart';
 import 'package:dangdang/core/utils/parsers/value_parser.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';

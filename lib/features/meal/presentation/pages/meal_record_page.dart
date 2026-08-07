@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dangdang/core/widgets/common/state_views.dart';
-import 'package:dangdang/core/widgets/common/ai_analysis_bottom_sheet.dart';
-import 'package:dangdang/core/widgets/filter/ai_analysis_button.dart';
-import 'package:dangdang/core/widgets/filter/record_category_tabs.dart';
-import 'package:dangdang/core/widgets/filter/record_range_dropdown.dart';
-import 'package:dangdang/core/widgets/filter/record_range_filter_card.dart';
+import 'package:dangdang/core/presentation/widgets/common/state_views.dart';
+import 'package:dangdang/core/presentation/widgets/common/ai_analysis_bottom_sheet.dart';
+import 'package:dangdang/core/presentation/widgets/filter/ai_analysis_button.dart';
+import 'package:dangdang/core/presentation/widgets/filter/record_category_tabs.dart';
+import 'package:dangdang/core/presentation/widgets/filter/record_range_dropdown.dart';
+import 'package:dangdang/core/presentation/widgets/filter/record_range_filter_card.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
@@ -18,7 +18,7 @@ import 'package:dangdang/features/meal/presentation/pages/meal_analysis_result_p
 import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:dangdang/features/meal/presentation/widgets/meal_record_card.dart';
-import 'package:dangdang/core/widgets/common/image_source_bottom_sheet.dart';
+import 'package:dangdang/core/presentation/widgets/common/image_source_bottom_sheet.dart';
 
 class MealRecordPage extends StatefulWidget {
   const MealRecordPage({super.key});

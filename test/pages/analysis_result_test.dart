@@ -1,65 +1,56 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
+import 'package:dangdang/features/meal/presentation/widgets/food_detail_item_card.dart';
+import 'package:dangdang/features/meal/presentation/widgets/meal_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image_picker/image_picker.dart';
 
 void main() {
-  late XFile mockImage;
-
   final mockResult = {
     'foods': [
       {
-        'name': '밥',
-        'amount': '1공기',
+        'name': 'Rice',
+        'amountLabel': '1 bowl',
+        'servingCount': 1,
+        'calories': 300,
         'carbohydrate': 65,
         'protein': 6,
         'fat': 1,
         'sugar': 0,
       },
       {
-        'name': '김치',
-        'amount': '1접시',
+        'name': 'Kimchi',
+        'amountLabel': '1 plate',
+        'servingCount': 1,
+        'calories': 20,
         'carbohydrate': 5,
         'protein': 1,
         'fat': 0,
         'sugar': 2,
       },
     ],
-    'aiComment': '테스트용 분석 결과입니다.',
+    'aiComment': 'Test analysis result',
   };
-
-  setUpAll(() async {
-    const base64Image =
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
-
-    final file = File('${Directory.systemTemp.path}/test_food_image.png');
-    await file.writeAsBytes(base64Decode(base64Image));
-
-    mockImage = XFile(file.path);
-  });
 
   Widget createTestWidget() {
     return MaterialApp(
-      home: AnalysisResultPage(result: mockResult, image: mockImage),
+      home: AnalysisResultPage(result: mockResult, image: null),
     );
   }
 
-  testWidgets('분석 결과 화면 UI 렌더링', (tester) async {
+  testWidgets('AnalysisResultPage renders core sections', (tester) async {
     await tester.pumpWidget(createTestWidget());
+    await tester.pump();
 
-    expect(find.text('분석 결과'), findsOneWidget);
-    expect(find.text('인식된 음식 (2)'), findsOneWidget);
-    expect(find.text('상세 수정 및 저장'), findsOneWidget);
-    expect(find.text('다시 촬영하기'), findsOneWidget);
+    expect(find.byType(MealImageViewer), findsOneWidget);
+    expect(find.byType(FoodDetailItemCard), findsNWidgets(2));
+    expect(find.byIcon(Icons.fastfood), findsOneWidget);
   });
 
-  testWidgets('음식 리스트가 표시되는지', (tester) async {
+  testWidgets('AnalysisResultPage shows parsed food names', (tester) async {
     await tester.pumpWidget(createTestWidget());
+    await tester.pump();
 
-    expect(find.textContaining('밥'), findsWidgets);
-    expect(find.textContaining('김치'), findsWidgets);
+    expect(find.text('Rice'), findsOneWidget);
+    expect(find.text('Kimchi'), findsOneWidget);
   });
 }

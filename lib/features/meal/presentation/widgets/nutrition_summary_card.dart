@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dangdang/core/widgets/common/custom_card.dart';
+import 'package:dangdang/core/presentation/widgets/common/custom_card.dart';
 
 class NutritionSummaryCard extends StatelessWidget {
   final String label;

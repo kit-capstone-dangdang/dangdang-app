@@ -1,66 +1,40 @@
-import 'package:dangdang/app/navigation/main_shell.dart';
-import 'package:dangdang/features/auth/data/repositories/firebase_auth_repository.dart';
+import 'package:dangdang/app/presentation/navigation/main_shell.dart';
+import 'package:dangdang/features/auth/presentation/viewmodels/login_view_model.dart';
 import 'package:dangdang/features/auth/presentation/pages/signup_page.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
+  Future<void> _signIn(BuildContext context, WidgetRef ref) async {
+    final viewModel = ref.read(loginViewModelProvider);
+    final message = await viewModel.signIn();
 
-class _LoginPageState extends State<LoginPage> {
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
-
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  bool _obscurePassword = true;
-
-  Future<void> _signIn() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      _showMessage('이메일과 비밀번호를 입력해 주세요.');
+    if (!context.mounted) {
       return;
     }
 
-    try {
-      await _authRepository.signIn(email: email, password: password);
-
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
+    if (message != null) {
+      ScaffoldMessenger.of(
         context,
-        MaterialPageRoute(builder: (_) => const MainShell()),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      _showMessage(e.toString().replaceFirst('Exception: ', ''));
+      ).showSnackBar(SnackBar(content: Text(message)));
+      return;
     }
-  }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
+    Navigator.pushReplacement(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      MaterialPageRoute(builder: (_) => const MainShell()),
+    );
   }
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(loginViewModelProvider);
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -77,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(
+              const Text(
                 '당당하게',
                 style: TextStyle(
                   fontSize: 32,
@@ -86,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 '건강 관리, 당당하게 시작해보세요!',
                 style: TextStyle(fontSize: 16, color: Color(0xFF8A8D9F)),
               ),
@@ -166,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                     const AuthLabel(text: '이메일 주소'),
                     const SizedBox(height: 8),
                     AuthTextField(
-                      controller: _emailController,
+                      controller: viewModel.emailController,
                       hintText: 'name@example.com',
                       icon: Icons.mail_outline,
                       keyboardType: TextInputType.emailAddress,
@@ -175,18 +149,14 @@ class _LoginPageState extends State<LoginPage> {
                     const AuthLabel(text: '비밀번호'),
                     const SizedBox(height: 8),
                     AuthTextField(
-                      controller: _passwordController,
+                      controller: viewModel.passwordController,
                       hintText: '비밀번호를 입력하세요',
                       icon: Icons.lock_outline,
-                      obscureText: _obscurePassword,
+                      obscureText: viewModel.obscurePassword,
                       suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                        onPressed: viewModel.toggleObscurePassword,
                         icon: Icon(
-                          _obscurePassword
+                          viewModel.obscurePassword
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
                           color: const Color(0xFFC4C6D0),
@@ -194,7 +164,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    AuthButton(text: '로그인', onPressed: _signIn),
+                    AuthButton(
+                      text: viewModel.isSubmitting ? '로그인 중..' : '로그인',
+                      onPressed: () => _signIn(context, ref),
+                    ),
                   ],
                 ),
               ),

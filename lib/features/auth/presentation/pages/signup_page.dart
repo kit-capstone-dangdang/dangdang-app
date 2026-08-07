@@ -1,77 +1,38 @@
+import 'package:dangdang/features/auth/presentation/viewmodels/signup_view_model.dart';
+import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
+import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
+import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/repositories/firebase_auth_repository.dart';
-import '../widgets/auth_button.dart';
-import '../widgets/auth_label.dart';
-import '../widgets/auth_text_field.dart';
-
-class SignupPage extends StatefulWidget {
+class SignupPage extends ConsumerWidget {
   const SignupPage({super.key});
 
-  @override
-  State<SignupPage> createState() => _SignupPageState();
-}
+  Future<void> _signUp(BuildContext context, WidgetRef ref) async {
+    final viewModel = ref.read(signupViewModelProvider);
+    final message = await viewModel.signUp();
 
-class _SignupPageState extends State<SignupPage> {
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
-
-  final TextEditingController _nameController = TextEditingController();
-
-  final TextEditingController _nicknameController = TextEditingController();
-
-  final TextEditingController _emailController = TextEditingController();
-
-  final TextEditingController _passwordController = TextEditingController();
-
-  bool _obscurePassword = true;
-
-  Future<void> _signUp() async {
-    final name = _nameController.text.trim();
-    final nickname = _nicknameController.text.trim();
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (name.isEmpty || nickname.isEmpty || email.isEmpty || password.isEmpty) {
-      _showMessage('모든 항목을 입력해 주세요.');
+    if (!context.mounted) {
       return;
     }
 
-    try {
-      await _authRepository.signUp(
-        name: name,
-        nickname: nickname,
-        email: email,
-        password: password,
-      );
-
-      if (!mounted) return;
-
-      _showMessage('회원가입이 완료되었습니다.');
-      Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
-
-      _showMessage(e.toString().replaceFirst('Exception: ', ''));
+    if (message != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      return;
     }
-  }
 
-  void _showMessage(String message) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).showSnackBar(const SnackBar(content: Text('회원가입이 완료되었습니다.')));
+    Navigator.pop(context);
   }
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _nicknameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(signupViewModelProvider);
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFBFF),
       body: SafeArea(
@@ -114,7 +75,7 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 16),
               const Text(
-                '혈당 매니저와 함께 더 건강한\n내일을 만들어보세요.',
+                '당당 매니저와 함께 내 건강한 일상을 만들어보세요.',
                 style: TextStyle(
                   fontSize: 18,
                   color: Color(0xFF6B7280),
@@ -134,7 +95,7 @@ class _SignupPageState extends State<SignupPage> {
                     const AuthLabel(text: '이름'),
                     const SizedBox(height: 12),
                     AuthTextField(
-                      controller: _nameController,
+                      controller: viewModel.nameController,
                       hintText: '실명을 입력해 주세요',
                       icon: Icons.person_outline,
                     ),
@@ -142,7 +103,7 @@ class _SignupPageState extends State<SignupPage> {
                     const AuthLabel(text: '닉네임'),
                     const SizedBox(height: 12),
                     AuthTextField(
-                      controller: _nicknameController,
+                      controller: viewModel.nicknameController,
                       hintText: '사용하실 별명을 입력하세요',
                       icon: Icons.edit_outlined,
                     ),
@@ -150,7 +111,7 @@ class _SignupPageState extends State<SignupPage> {
                     const AuthLabel(text: '이메일 주소'),
                     const SizedBox(height: 12),
                     AuthTextField(
-                      controller: _emailController,
+                      controller: viewModel.emailController,
                       hintText: 'name@example.com',
                       icon: Icons.mail_outline,
                       keyboardType: TextInputType.emailAddress,
@@ -159,18 +120,14 @@ class _SignupPageState extends State<SignupPage> {
                     const AuthLabel(text: '비밀번호'),
                     const SizedBox(height: 12),
                     AuthTextField(
-                      controller: _passwordController,
-                      hintText: '6자리 이상 입력하세요',
+                      controller: viewModel.passwordController,
+                      hintText: '6자리 이상 입력해 주세요',
                       icon: Icons.lock_outline,
-                      obscureText: _obscurePassword,
+                      obscureText: viewModel.obscurePassword,
                       suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                        onPressed: viewModel.toggleObscurePassword,
                         icon: Icon(
-                          _obscurePassword
+                          viewModel.obscurePassword
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
                           color: const Color(0xFFC4C6D0),
@@ -178,7 +135,10 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    AuthButton(text: '회원가입 완료', onPressed: _signUp),
+                    AuthButton(
+                      text: viewModel.isSubmitting ? '가입 중..' : '회원가입 완료',
+                      onPressed: () => _signUp(context, ref),
+                    ),
                   ],
                 ),
               ),
