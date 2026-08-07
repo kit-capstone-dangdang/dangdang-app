@@ -1,8 +1,6 @@
-import 'package:dangdang/core/presentation/providers/app_providers.dart';
 import 'package:dangdang/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_profile_repository.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MyPageViewModel extends ChangeNotifier {
   MyPageViewModel(this._profileRepository, this._authRepository);
@@ -53,12 +51,3 @@ class MyPageViewModel extends ChangeNotifier {
     await _authRepository.signOut();
   }
 }
-
-final myPageViewModelProvider = ChangeNotifierProvider.autoDispose<
-  MyPageViewModel
->((ref) {
-  return MyPageViewModel(
-    ref.watch(profileRepositoryProvider),
-    ref.watch(authRepositoryProvider),
-  );
-});

@@ -9,8 +9,8 @@ import 'package:dangdang/core/presentation/widgets/filter/record_category_tabs.d
 import 'package:dangdang/core/presentation/widgets/filter/record_range_dropdown.dart';
 import 'package:dangdang/core/presentation/widgets/filter/record_range_filter_card.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
-import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
-import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
+import 'package:dangdang/features/meal/data/datasources/image_picker_service.dart';
+import 'package:dangdang/features/meal/data/datasources/meal_ai_service.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
 import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
 import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';

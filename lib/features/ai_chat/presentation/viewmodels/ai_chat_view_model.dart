@@ -1,10 +1,8 @@
-import 'package:dangdang/core/presentation/providers/app_providers.dart';
-import 'package:dangdang/features/ai_chat/data/services/ai_chat_service.dart';
+import 'package:dangdang/features/ai_chat/data/datasources/ai_chat_service.dart';
 import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_message.dart';
 import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_reply.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AiChatViewModel extends ChangeNotifier {
   AiChatViewModel(this._aiChatService) {
@@ -146,11 +144,3 @@ class AiChatViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-
-final aiChatViewModelProvider = ChangeNotifierProvider.autoDispose<
-  AiChatViewModel
->((ref) {
-  final viewModel = AiChatViewModel(ref.watch(aiChatServiceProvider));
-  ref.onDispose(viewModel.dispose);
-  return viewModel;
-});

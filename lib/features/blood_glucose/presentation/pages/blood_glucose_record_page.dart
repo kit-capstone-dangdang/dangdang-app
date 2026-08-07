@@ -15,7 +15,7 @@ import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_edit_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_record_card.dart';
-import 'package:dangdang/features/blood_glucose/data/services/blood_glucose_ai_service.dart';
+import 'package:dangdang/features/blood_glucose/data/datasources/blood_glucose_ai_service.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 

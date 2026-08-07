@@ -1,5 +1,5 @@
 import 'package:dangdang/core/presentation/widgets/common/image_source_bottom_sheet.dart';
-import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
+import 'package:dangdang/features/meal/data/datasources/image_picker_service.dart';
 import 'package:dangdang/features/profile/data/repositories/firebase_profile_repository.dart';
 import 'package:dangdang/features/profile/presentation/widgets/profile_form_card.dart';
 import 'package:dangdang/features/profile/presentation/widgets/profile_section_title.dart';

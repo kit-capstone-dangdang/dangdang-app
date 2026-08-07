@@ -1,4 +1,5 @@
 import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_message.dart';
+import 'package:dangdang/features/ai_chat/presentation/providers/ai_chat_view_model_provider.dart';
 import 'package:dangdang/features/ai_chat/presentation/viewmodels/ai_chat_view_model.dart';
 import 'package:dangdang/features/ai_chat/presentation/widgets/ai_chat_bubble.dart';
 import 'package:flutter/material.dart';

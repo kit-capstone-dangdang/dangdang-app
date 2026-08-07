@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
-import 'package:dangdang/features/blood_glucose/data/prompts/blood_glucose_analysis_prompts.dart';
+import 'package:dangdang/features/blood_glucose/data/datasources/blood_glucose_analysis_prompts.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_analysis_result.dart';
 
 class BloodGlucoseAIService {

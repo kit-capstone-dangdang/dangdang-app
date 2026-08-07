@@ -1,5 +1,6 @@
 import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
 import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
+import 'package:dangdang/features/profile/presentation/providers/my_page_view_model_provider.dart';
 import 'package:dangdang/features/profile/presentation/viewmodels/my_page_view_model.dart';
 import 'package:dangdang/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:dangdang/features/profile/presentation/pages/security_privacy_page.dart';
