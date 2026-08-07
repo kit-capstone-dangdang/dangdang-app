@@ -1,6 +1,6 @@
 import 'package:dangdang/core/presentation/widgets/common/custom_card.dart';
 import 'package:dangdang/features/meal/domain/entities/food_item.dart';
-import 'package:dangdang/features/meal/presentation/views/food_edit_page.dart';
+import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';
 import 'package:dangdang/features/meal/presentation/widgets/food_detail_item_card.dart';
 import 'package:dangdang/features/meal/presentation/widgets/meal_image_viewer.dart';
 import 'package:flutter/material.dart';

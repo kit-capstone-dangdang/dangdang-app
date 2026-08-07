@@ -2,7 +2,7 @@ import 'package:dangdang/core/presentation/widgets/common/custom_card.dart';
 import 'package:dangdang/core/presentation/widgets/common/custom_icon.dart';
 import 'package:dangdang/features/meal/data/repositories/firebase_meal_repository.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
-import 'package:dangdang/features/meal/presentation/views/food_edit_page.dart';
+import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';
 import 'package:dangdang/features/meal/presentation/widgets/food_detail_item_card.dart';
 import 'package:dangdang/features/meal/presentation/widgets/meal_image_viewer.dart';
 import 'package:dangdang/features/meal/presentation/widgets/nutrition_summary_box.dart';

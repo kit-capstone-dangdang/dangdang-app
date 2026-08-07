@@ -11,9 +11,9 @@ import 'package:dangdang/core/presentation/widgets/filter/record_range_filter_ca
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_analysis_result.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
-import 'package:dangdang/features/blood_glucose/presentation/views/blood_glucose_analysis_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/views/blood_glucose_add_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/views/blood_glucose_edit_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_add_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_edit_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_record_card.dart';
 import 'package:dangdang/features/blood_glucose/data/services/blood_glucose_ai_service.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';

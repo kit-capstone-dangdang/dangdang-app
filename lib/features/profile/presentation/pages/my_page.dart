@@ -1,8 +1,8 @@
 import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
-import 'package:dangdang/features/auth/presentation/views/login_page.dart';
+import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
 import 'package:dangdang/features/profile/presentation/viewmodels/my_page_view_model.dart';
-import 'package:dangdang/features/profile/presentation/views/edit_profile_page.dart';
-import 'package:dangdang/features/profile/presentation/views/security_privacy_page.dart';
+import 'package:dangdang/features/profile/presentation/pages/edit_profile_page.dart';
+import 'package:dangdang/features/profile/presentation/pages/security_privacy_page.dart';
 import 'package:dangdang/features/profile/presentation/widgets/profile_menu_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

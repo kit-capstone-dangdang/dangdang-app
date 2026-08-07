@@ -9,14 +9,14 @@ import 'package:dangdang/core/presentation/widgets/common/custom_icon.dart';
 import 'package:dangdang/core/presentation/widgets/common/state_views.dart';
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
-import 'package:dangdang/features/meal/presentation/views/analysis_result_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/views/blood_glucose_analysis_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/views/blood_glucose_add_page.dart';
+import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_analysis_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_add_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_line_chart.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/repositories/firebase_blood_glucose_repository.dart';
-import 'package:dangdang/features/profile/presentation/views/my_page.dart';
-import 'package:dangdang/features/blood_glucose/presentation/views/blood_glucose_record_page.dart';
+import 'package:dangdang/features/profile/presentation/pages/my_page.dart';
+import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
 import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
 
 class HomeDashboardPage extends StatefulWidget {

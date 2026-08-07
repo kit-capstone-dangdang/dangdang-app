@@ -1,6 +1,6 @@
 import 'package:dangdang/app/presentation/navigation/main_shell.dart';
 import 'package:dangdang/core/presentation/providers/app_providers.dart';
-import 'package:dangdang/features/auth/presentation/views/login_page.dart';
+import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

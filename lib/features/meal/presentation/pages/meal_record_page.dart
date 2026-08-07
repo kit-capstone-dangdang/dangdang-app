@@ -12,9 +12,9 @@ import 'package:dangdang/features/meal/data/repositories/firebase_meal_repositor
 import 'package:dangdang/features/meal/data/services/image_picker_service.dart';
 import 'package:dangdang/features/meal/data/services/meal_ai_service.dart';
 import 'package:dangdang/features/meal/domain/entities/meal_record.dart';
-import 'package:dangdang/features/meal/presentation/views/analysis_result_page.dart';
-import 'package:dangdang/features/meal/presentation/views/food_edit_page.dart';
-import 'package:dangdang/features/meal/presentation/views/meal_analysis_result_page.dart';
+import 'package:dangdang/features/meal/presentation/pages/analysis_result_page.dart';
+import 'package:dangdang/features/meal/presentation/pages/food_edit_page.dart';
+import 'package:dangdang/features/meal/presentation/pages/meal_analysis_result_page.dart';
 import 'package:dangdang/features/meal/presentation/widgets/ai_analysis_card.dart';
 import 'package:dangdang/features/meal/presentation/widgets/date_header.dart';
 import 'package:dangdang/features/meal/presentation/widgets/meal_record_card.dart';

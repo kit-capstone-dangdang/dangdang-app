@@ -9,7 +9,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
-import 'package:dangdang/features/profile/presentation/views/change_password_page.dart';
+import 'package:dangdang/features/profile/presentation/pages/change_password_page.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});

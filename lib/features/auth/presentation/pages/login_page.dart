@@ -1,6 +1,6 @@
 import 'package:dangdang/app/presentation/navigation/main_shell.dart';
 import 'package:dangdang/features/auth/presentation/viewmodels/login_view_model.dart';
-import 'package:dangdang/features/auth/presentation/views/signup_page.dart';
+import 'package:dangdang/features/auth/presentation/pages/signup_page.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
