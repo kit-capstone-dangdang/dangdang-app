@@ -6,6 +6,11 @@ abstract class AuthRepository {
     required String nickname,
     required String email,
     required String password,
+    required String birthDate,
+    required String gender,
+    required int height,
+    required int weight,
+    required String diabetesType,
   });
 
   Future<void> signIn({required String email, required String password});

@@ -49,6 +49,11 @@ class FirebaseAuthRepository implements AuthRepository {
     required String nickname,
     required String email,
     required String password,
+    required String birthDate,
+    required String gender,
+    required int height,
+    required int weight,
+    required String diabetesType,
   }) async {
     final nicknameRef = _firestore
         .collection('nicknames')
@@ -96,11 +101,11 @@ class FirebaseAuthRepository implements AuthRepository {
 
         transaction.set(_firestore.collection('users').doc(firebaseUser.uid), {
           ...user.toJson(),
-          'birthDate': '',
-          'gender': '',
-          'height': 0,
-          'weight': 0,
-          'diabetesType': '',
+          'birthDate': birthDate,
+          'gender': gender,
+          'height': height,
+          'weight': weight,
+          'diabetesType': diabetesType,
           'profileImageUrl': '',
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
