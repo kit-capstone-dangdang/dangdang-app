@@ -49,7 +49,8 @@ $mealRecordsJson
 형식:
 {
   "patterns": [],
-  "recommendations": []
+  "recommendations": [],
+  "rating": 4.5
 }
 
 규칙:
@@ -59,8 +60,10 @@ $mealRecordsJson
 - 의료 진단·약물 조언 금지
 - 식사 시간, 탄단지, 당류, 야식, 규칙성 중심
 - 간식도 식사 타입으로 함께 고려
+- rating은 탄수화물, 단백질, 지방, 당류, 영양 균형, 당뇨 관리 적합성을 종합해 0.5 단위로 평가
+- rating은 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 중 하나만 사용
 - patterns/recommendations 각 3~5개
-- 키는 patterns, recommendations만 사용
+- 키는 patterns, recommendations, rating만 사용
 - JSON만 반환
 ''';
 }

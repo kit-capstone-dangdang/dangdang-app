@@ -22,6 +22,7 @@ class BloodGlucoseAIService {
           patterns: ['선택하신 조건에 해당하는 혈당 데이터가 없습니다.'],
           recommendations: ['먼저 혈당을 기록하고 AI 분석을 받아보세요!'],
           reportText: '',
+          rating: 0.5,
         );
       }
 
@@ -59,6 +60,7 @@ class BloodGlucoseAIService {
         patterns: ['분석 중 오류가 발생했습니다.'],
         recommendations: ['잠시 후 다시 시도해주세요.'],
         reportText: '',
+        rating: 0.5,
       );
     }
   }
