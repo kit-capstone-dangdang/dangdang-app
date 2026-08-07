@@ -663,7 +663,7 @@ class _FoodEditPageState extends State<FoodEditPage> {
                                 isDense: true,
                                 underline: const SizedBox(),
                                 icon: const Icon(Icons.keyboard_arrow_down),
-                                items: ['아침', '점심', '저녁', '야식']
+                                items: ['아침', '점심', '저녁', '간식', '야식']
                                     .map(
                                       (meal) => DropdownMenuItem(
                                         value: meal,
