@@ -1,16 +1,24 @@
 import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
-import 'package:dangdang/features/profile/presentation/providers/security_privacy_view_model_provider.dart';
-import 'package:dangdang/features/profile/presentation/viewmodels/security_privacy_view_model.dart';
+import 'package:dangdang/features/profile/presentation/providers/security_privacy_model_provider.dart';
 import 'package:dangdang/features/profile/presentation/widgets/security_privacy_menu_item.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SecurityPrivacyPage extends ConsumerWidget {
   const SecurityPrivacyPage({super.key});
 
+  static final Uri _privacyPolicyUri = Uri.parse(
+    'https://dangdang-app.web.app/privacy.html',
+  );
+  static final Uri _termsUri = Uri.parse(
+    'https://dangdang-app.web.app/terms.html',
+  );
+
   Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
-    final message = await ref.read(securityPrivacyViewModelProvider).deleteAccount();
+    final message = await ref.read(securityPrivacyProvider).deleteAccount();
 
     if (!context.mounted) {
       return;
@@ -30,20 +38,69 @@ class SecurityPrivacyPage extends ConsumerWidget {
     );
   }
 
+  Future<void> _openExternalUrl(BuildContext context, Uri uri) async {
+    if (kIsWeb) {
+      try {
+        final launched = await launchUrl(uri, webOnlyWindowName: '_blank');
+
+        if (!launched && context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('페이지를 열 수 없습니다.')));
+        }
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('페이지를 열 수 없습니다.')));
+        }
+      }
+      return;
+    }
+
+    try {
+      final launchModes = [LaunchMode.externalApplication, LaunchMode.platformDefault];
+
+      for (final mode in launchModes) {
+        try {
+          final launched = await launchUrl(uri, mode: mode);
+
+          if (launched) {
+            return;
+          }
+        } catch (_) {
+          continue;
+        }
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('페이지를 열 수 없습니다.')));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('페이지를 열 수 없습니다.')));
+      }
+    }
+  }
+
   void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.read(securityPrivacyViewModelProvider);
-    viewModel.clearPassword();
+    final model = ref.read(securityPrivacyProvider);
+    model.clearPassword();
 
     final textTheme = Theme.of(context).textTheme;
 
     showDialog<void>(
       context: context,
-      barrierDismissible: !viewModel.isDeleting,
+      barrierDismissible: !model.isDeleting,
       barrierColor: Colors.black.withOpacity(0.6),
       builder: (dialogContext) {
         return Consumer(
           builder: (context, ref, child) {
-            final dialogViewModel = ref.watch(securityPrivacyViewModelProvider);
+            final dialogModel = ref.watch(securityPrivacyProvider);
 
             return Dialog(
               backgroundColor: Colors.white,
@@ -99,14 +156,14 @@ class SecurityPrivacyPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 28),
                       AuthTextField(
-                        controller: dialogViewModel.passwordController,
+                        controller: dialogModel.passwordController,
                         hintText: '현재 비밀번호 입력',
                         icon: Icons.lock_outline,
-                        obscureText: dialogViewModel.obscurePassword,
+                        obscureText: dialogModel.obscurePassword,
                         suffixIcon: IconButton(
-                          onPressed: dialogViewModel.toggleObscurePassword,
+                          onPressed: dialogModel.toggleObscurePassword,
                           icon: Icon(
-                            dialogViewModel.obscurePassword
+                            dialogModel.obscurePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
                             color: const Color(0xFFC4C6D0),
@@ -120,7 +177,7 @@ class SecurityPrivacyPage extends ConsumerWidget {
                             child: SizedBox(
                               height: 74,
                               child: OutlinedButton(
-                                onPressed: dialogViewModel.isDeleting
+                                onPressed: dialogModel.isDeleting
                                     ? null
                                     : () {
                                         Navigator.pop(dialogContext);
@@ -149,7 +206,7 @@ class SecurityPrivacyPage extends ConsumerWidget {
                             child: SizedBox(
                               height: 74,
                               child: ElevatedButton(
-                                onPressed: dialogViewModel.isDeleting
+                                onPressed: dialogModel.isDeleting
                                     ? null
                                     : () async {
                                         await _deleteAccount(context, ref);
@@ -163,7 +220,7 @@ class SecurityPrivacyPage extends ConsumerWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  dialogViewModel.isDeleting
+                                  dialogModel.isDeleting
                                       ? '탈퇴 중..'
                                       : '탈퇴하기',
                                   style: textTheme.titleMedium?.copyWith(
@@ -251,19 +308,25 @@ class SecurityPrivacyPage extends ConsumerWidget {
                       ),
                       child: Column(
                         children: [
-                          const SecurityPrivacyMenuItem(
+                          SecurityPrivacyMenuItem(
                             icon: Icons.verified_user_outlined,
                             title: '개인정보 처리방침',
-                            iconColor: Color(0xFF9CA3AF),
-                            backgroundColor: Color(0xFFF9FAFB),
-                            textColor: Color(0xFF1F2937),
+                            iconColor: const Color(0xFF9CA3AF),
+                            backgroundColor: const Color(0xFFF9FAFB),
+                            textColor: const Color(0xFF1F2937),
+                            onTap: () async {
+                              await _openExternalUrl(context, _privacyPolicyUri);
+                            },
                           ),
-                          const SecurityPrivacyMenuItem(
+                          SecurityPrivacyMenuItem(
                             icon: Icons.description_outlined,
                             title: '이용약관',
-                            iconColor: Color(0xFF9CA3AF),
-                            backgroundColor: Color(0xFFF9FAFB),
-                            textColor: Color(0xFF1F2937),
+                            iconColor: const Color(0xFF9CA3AF),
+                            backgroundColor: const Color(0xFFF9FAFB),
+                            textColor: const Color(0xFF1F2937),
+                            onTap: () async {
+                              await _openExternalUrl(context, _termsUri);
+                            },
                           ),
                           SecurityPrivacyMenuItem(
                             icon: Icons.person_remove_alt_1_outlined,

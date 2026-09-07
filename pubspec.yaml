@@ -1,7 +1,7 @@
 name: dangdang
 description: "A new Flutter project."
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.0+5
 
 environment:
   sdk: ^3.11.0-162.0.dev
@@ -18,22 +18,35 @@ dependencies:
   cloud_firestore: ^6.0.0
   fl_chart: ^1.2.0
   firebase_auth: ^6.4.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.7
   flutter_lints: ^6.0.0
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/app_icon.png"
+  image_path: "assets/images/app_icon3.png"
   min_sdk_android: 21
   remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/app_icon3.png
+
+  android: true
+  ios: true
+
+  android_12:
+    color: "#FFFFFF"
+    image: assets/images/app_icon3.png
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/app_icon.png
+    - assets/images/app_icon3.png

@@ -1,8 +1,7 @@
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_text_field.dart';
-import 'package:dangdang/features/profile/presentation/providers/change_password_view_model_provider.dart';
-import 'package:dangdang/features/profile/presentation/viewmodels/change_password_view_model.dart';
+import 'package:dangdang/features/profile/presentation/providers/change_password_model_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,7 +9,7 @@ class ChangePasswordPage extends ConsumerWidget {
   const ChangePasswordPage({super.key});
 
   Future<void> _changePassword(BuildContext context, WidgetRef ref) async {
-    final message = await ref.read(changePasswordViewModelProvider).changePassword();
+    final message = await ref.read(changePasswordProvider).changePassword();
 
     if (!context.mounted) {
       return;
@@ -33,7 +32,7 @@ class ChangePasswordPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const primaryColor = Color(0xFF4F63F6);
     final textTheme = Theme.of(context).textTheme;
-    final viewModel = ref.watch(changePasswordViewModelProvider);
+    final model = ref.watch(changePasswordProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -133,14 +132,14 @@ class ChangePasswordPage extends ConsumerWidget {
                           const AuthLabel(text: '현재 비밀번호'),
                           const SizedBox(height: 10),
                           AuthTextField(
-                            controller: viewModel.currentPasswordController,
+                            controller: model.currentPasswordController,
                             hintText: '현재 비밀번호 입력',
                             icon: Icons.lock_outline,
-                            obscureText: viewModel.obscureCurrentPassword,
+                            obscureText: model.obscureCurrentPassword,
                             suffixIcon: IconButton(
-                              onPressed: viewModel.toggleCurrentPasswordVisibility,
+                              onPressed: model.toggleCurrentPasswordVisibility,
                               icon: Icon(
-                                viewModel.obscureCurrentPassword
+                                model.obscureCurrentPassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 color: const Color(0xFFC4C6D0),
@@ -153,14 +152,14 @@ class ChangePasswordPage extends ConsumerWidget {
                           const AuthLabel(text: '새 비밀번호'),
                           const SizedBox(height: 10),
                           AuthTextField(
-                            controller: viewModel.newPasswordController,
+                            controller: model.newPasswordController,
                             hintText: '새 비밀번호 입력 (6자리 이상)',
                             icon: Icons.lock_outline,
-                            obscureText: viewModel.obscureNewPassword,
+                            obscureText: model.obscureNewPassword,
                             suffixIcon: IconButton(
-                              onPressed: viewModel.toggleNewPasswordVisibility,
+                              onPressed: model.toggleNewPasswordVisibility,
                               icon: Icon(
-                                viewModel.obscureNewPassword
+                                model.obscureNewPassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 color: const Color(0xFFC4C6D0),
@@ -171,15 +170,15 @@ class ChangePasswordPage extends ConsumerWidget {
                           const AuthLabel(text: '새 비밀번호 확인'),
                           const SizedBox(height: 10),
                           AuthTextField(
-                            controller: viewModel.confirmPasswordController,
+                            controller: model.confirmPasswordController,
                             hintText: '새 비밀번호 다시 입력',
                             icon: Icons.check_circle_outline,
-                            obscureText: viewModel.obscureConfirmPassword,
+                            obscureText: model.obscureConfirmPassword,
                             suffixIcon: IconButton(
                               onPressed:
-                                  viewModel.toggleConfirmPasswordVisibility,
+                                  model.toggleConfirmPasswordVisibility,
                               icon: Icon(
-                                viewModel.obscureConfirmPassword
+                                model.obscureConfirmPassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 color: const Color(0xFFC4C6D0),
@@ -205,7 +204,7 @@ class ChangePasswordPage extends ConsumerWidget {
                       child: SizedBox(
                         height: 74,
                         child: OutlinedButton(
-                          onPressed: viewModel.isLoading
+                          onPressed: model.isLoading
                               ? null
                               : () {
                                   Navigator.pop(context);
@@ -234,7 +233,7 @@ class ChangePasswordPage extends ConsumerWidget {
                       child: SizedBox(
                         height: 74,
                         child: AuthButton(
-                          text: viewModel.isLoading
+                          text: model.isLoading
                               ? '변경 중..'
                               : '비밀번호 변경',
                           onPressed: () => _changePassword(context, ref),

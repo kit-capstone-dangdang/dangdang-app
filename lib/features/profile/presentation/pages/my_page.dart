@@ -1,7 +1,6 @@
 import 'package:dangdang/core/presentation/widgets/common/profile_avatar.dart';
 import 'package:dangdang/features/auth/presentation/pages/login_page.dart';
-import 'package:dangdang/features/profile/presentation/providers/my_page_view_model_provider.dart';
-import 'package:dangdang/features/profile/presentation/viewmodels/my_page_view_model.dart';
+import 'package:dangdang/features/profile/presentation/providers/my_page_model_provider.dart';
 import 'package:dangdang/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:dangdang/features/profile/presentation/pages/security_privacy_page.dart';
 import 'package:dangdang/features/profile/presentation/widgets/profile_menu_card.dart';
@@ -20,12 +19,12 @@ class _MyPageState extends ConsumerState<MyPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(myPageViewModelProvider).loadUserInfo();
+      ref.read(myPageProvider).loadUserInfo();
     });
   }
 
   Future<void> _logout() async {
-    await ref.read(myPageViewModelProvider).signOut();
+    await ref.read(myPageProvider).signOut();
 
     if (!mounted) {
       return;
@@ -45,18 +44,18 @@ class _MyPageState extends ConsumerState<MyPage> {
     );
 
     if (updated == true) {
-      await ref.read(myPageViewModelProvider).loadUserInfo(force: true);
+      await ref.read(myPageProvider).loadUserInfo(force: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final viewModel = ref.watch(myPageViewModelProvider);
+    final model = ref.watch(myPageProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: viewModel.isLoading
+      body: model.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: CustomScrollView(
@@ -117,8 +116,8 @@ class _MyPageState extends ConsumerState<MyPage> {
                                   ),
                                   child: ProfileAvatar(
                                     radius: 86,
-                                    profileImageUrl: viewModel.profileImageUrl,
-                                    fallbackText: viewModel.initial,
+                                    profileImageUrl: model.profileImageUrl,
+                                    fallbackText: model.initial,
                                     textStyle: textTheme.displayMedium?.copyWith(
                                       color: const Color(0xFF4F63F6),
                                       fontWeight: FontWeight.bold,
@@ -127,7 +126,7 @@ class _MyPageState extends ConsumerState<MyPage> {
                                 ),
                                 const SizedBox(height: 30),
                                 Text(
-                                  '${viewModel.nickname}님',
+                                  '${model.nickname}님',
                                   style: textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF111827),
@@ -135,7 +134,7 @@ class _MyPageState extends ConsumerState<MyPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  viewModel.email,
+                                  model.email,
                                   style: textTheme.titleMedium?.copyWith(
                                     color: const Color(0xFF6B7280),
                                   ),

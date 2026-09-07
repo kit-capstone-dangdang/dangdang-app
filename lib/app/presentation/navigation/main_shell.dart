@@ -1,5 +1,5 @@
 import 'package:dangdang/core/presentation/widgets/common/custom_bottom_navigation_bar.dart';
-import 'package:dangdang/app/presentation/viewmodels/main_shell_view_model.dart';
+import 'package:dangdang/app/presentation/models/main_shell_model.dart';
 import 'package:dangdang/features/ai_chat/presentation/pages/ai_chat_page.dart';
 import 'package:dangdang/features/blood_glucose/presentation/pages/blood_glucose_record_page.dart';
 import 'package:dangdang/features/home/presentation/pages/home_dashboard_page.dart';
@@ -14,7 +14,7 @@ class MainShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(mainShellViewModelProvider(initialIndex));
+    final model = ref.watch(mainShellProvider(initialIndex));
     final screens = const [
       HomeDashboardPage(),
       BloodSugarRecordPage(),
@@ -23,10 +23,10 @@ class MainShell extends ConsumerWidget {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: viewModel.selectedIndex, children: screens),
+      body: IndexedStack(index: model.selectedIndex, children: screens),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: viewModel.selectedIndex,
-        onTap: viewModel.selectIndex,
+        currentIndex: model.selectedIndex,
+        onTap: model.selectIndex,
       ),
     );
   }

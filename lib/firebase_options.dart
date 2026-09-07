@@ -57,7 +57,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDHANhRlAN_etGgx3beKciU9AOsiIeTmVc',
-    appId: '1:959037542828:android:1ac0790b66ce33d9f6ea09',
+    appId: '1:959037542828:android:4c4ace4eef3a927ff6ea09',
     messagingSenderId: '959037542828',
     projectId: 'dangdang-app',
     storageBucket: 'dangdang-app.firebasestorage.app',
@@ -71,4 +71,5 @@ class DefaultFirebaseOptions {
     authDomain: 'dangdang-app.firebaseapp.com',
     storageBucket: 'dangdang-app.firebasestorage.app',
   );
+
 }

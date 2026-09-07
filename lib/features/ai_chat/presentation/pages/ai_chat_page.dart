@@ -1,6 +1,5 @@
-import 'package:dangdang/features/ai_chat/domain/entities/ai_chat_message.dart';
-import 'package:dangdang/features/ai_chat/presentation/providers/ai_chat_view_model_provider.dart';
-import 'package:dangdang/features/ai_chat/presentation/viewmodels/ai_chat_view_model.dart';
+import 'package:dangdang/features/ai_chat/presentation/providers/ai_chat_model_provider.dart';
+import 'package:dangdang/features/ai_chat/presentation/models/ai_chat_model.dart';
 import 'package:dangdang/features/ai_chat/presentation/widgets/ai_chat_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,24 +35,24 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   }
 
   Future<void> _sendTextMessage() async {
-    await ref.read(aiChatViewModelProvider).sendTextMessage();
+    await ref.read(aiChatProvider).sendTextMessage();
     _scrollToBottom();
   }
 
   Future<void> _sendSuggestionMessage(String suggestion) async {
-    await ref.read(aiChatViewModelProvider).sendSuggestionMessage(suggestion);
+    await ref.read(aiChatProvider).sendSuggestionMessage(suggestion);
     _scrollToBottom();
   }
 
   void _resetConversation() {
     FocusScope.of(context).unfocus();
-    ref.read(aiChatViewModelProvider).resetConversation();
+    ref.read(aiChatProvider).resetConversation();
     _scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(aiChatViewModelProvider);
+    final model = ref.watch(aiChatProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -68,13 +67,13 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                 children: [
                   _buildWarningBanner(),
                   const SizedBox(height: 18),
-                  ...viewModel.messages.map(
+                  ...model.messages.map(
                     (message) => Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: AiChatBubble(message: message),
                     ),
                   ),
-                  if (viewModel.isLoading)
+                  if (model.isLoading)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.symmetric(
@@ -101,14 +100,14 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                         ),
                       ),
                     ),
-                  if (!viewModel.isLoading) ...[
+                  if (!model.isLoading) ...[
                     const SizedBox(height: 4),
-                    _buildSuggestionSection(viewModel),
+                    _buildSuggestionSection(model),
                   ],
                 ],
               ),
             ),
-            _buildComposer(viewModel),
+            _buildComposer(model),
           ],
         ),
       ),
@@ -240,12 +239,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     );
   }
 
-  Widget _buildSuggestionSection(AiChatViewModel viewModel) {
-    if (viewModel.visibleSuggestions.isEmpty) {
+  Widget _buildSuggestionSection(AiChatModel model) {
+    if (model.visibleSuggestions.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final title = viewModel.hasUserConversation
+    final title = model.hasUserConversation
         ? '이어서 이런 것도 물어볼 수 있어요'
         : '어떻게 질문해야 좋을지 모르겠다면 아래 예시를 눌러보세요';
 
@@ -262,18 +261,18 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
           ),
         ),
         const SizedBox(height: 12),
-        ...viewModel.visibleSuggestions.map(
+        ...model.visibleSuggestions.map(
           (question) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: _buildSuggestionChip(viewModel, question),
+            child: _buildSuggestionChip(model, question),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSuggestionChip(AiChatViewModel viewModel, String question) {
-    final isSelected = viewModel.selectedSuggestion == question;
+  Widget _buildSuggestionChip(AiChatModel model, String question) {
+    final isSelected = model.selectedSuggestion == question;
 
     return GestureDetector(
       onTap: () => _sendSuggestionMessage(question),
@@ -305,7 +304,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     );
   }
 
-  Widget _buildComposer(AiChatViewModel viewModel) {
+  Widget _buildComposer(AiChatModel model) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
       decoration: const BoxDecoration(
@@ -329,7 +328,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
           children: [
             Expanded(
               child: TextField(
-                controller: viewModel.messageController,
+                controller: model.messageController,
                 onSubmitted: (_) => _sendTextMessage(),
                 minLines: 1,
                 maxLines: 4,
@@ -350,12 +349,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
             ),
             const SizedBox(width: 8),
             GestureDetector(
-              onTap: viewModel.canSend ? _sendTextMessage : null,
+              onTap: model.canSend ? _sendTextMessage : null,
               child: Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: viewModel.canSend
+                  color: model.canSend
                       ? const Color(0xFFDEE5FF)
                       : const Color(0xFFF0F2F7),
                   borderRadius: BorderRadius.circular(16),
@@ -363,7 +362,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                 child: Icon(
                   Icons.send_rounded,
                   size: 22,
-                  color: viewModel.canSend
+                  color: model.canSend
                       ? const Color(0xFF7A8AEF)
                       : const Color(0xFFB7BFCC),
                 ),
