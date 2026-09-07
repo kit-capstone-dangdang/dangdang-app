@@ -142,8 +142,8 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
     return const Color(0xFF34A853);
   }
 
-  Widget _buildRatingView(double rating) {
-    final ratingColor = _ratingColor(rating);
+  Widget _buildRatingView(double? rating) {
+    final ratingColor = rating == null ? Colors.grey : _ratingColor(rating);
 
     return Container(
       width: double.infinity,
@@ -154,7 +154,9 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
         border: Border.all(color: ratingColor.withOpacity(0.24)),
       ),
       child: Text(
-        _ratingLabel(rating),
+        rating == null
+            ? '평가할 수 없음\n목표 판정이 가능한 유효한 공복·식전·식후 기록이 필요합니다.'
+            : _ratingLabel(rating),
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w800,
           color: ratingColor,
