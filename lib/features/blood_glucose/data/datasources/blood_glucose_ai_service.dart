@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dangdang/features/blood_glucose/domain/services/blood_glucose_risk_calculator.dart';
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/domain/entities/blood_glucose_record.dart';
 import 'package:dangdang/features/blood_glucose/data/datasources/blood_glucose_analysis_prompts.dart';
@@ -16,13 +17,16 @@ class BloodGlucoseAIService {
     required String timeFilter,
     required String diabetesType,
   }) async {
+    final assessment = calculateBloodGlucoseRisk(records);
     try {
       if (records.isEmpty) {
         return const BloodGlucoseAnalysisResult(
           patterns: ['선택하신 조건에 해당하는 혈당 데이터가 없습니다.'],
           recommendations: ['먼저 혈당을 기록하고 AI 분석을 받아보세요!'],
           reportText: '',
-          rating: 0.5,
+          rating: null,
+          lowRiskLevel: null,
+          highRiskLevel: null,
         );
       }
 
@@ -44,6 +48,7 @@ class BloodGlucoseAIService {
             rangeLabel: rangeLabel,
             timeFilter: timeFilter,
             diabetesType: diabetesType,
+            assessment: assessment,
           );
 
       final response = await _geminiClient.generateText(prompt);
@@ -54,13 +59,20 @@ class BloodGlucoseAIService {
 
       final responseData = _geminiClient.decodeJsonObject(response);
 
-      return BloodGlucoseAnalysisResult.fromJson(responseData);
+      return BloodGlucoseAnalysisResult.fromJson(
+        responseData,
+        rating: assessment.finalRating,
+        lowRiskLevel: assessment.lowRiskLevel,
+        highRiskLevel: assessment.highRiskLevel,
+      );
     } catch (e) {
-      return const BloodGlucoseAnalysisResult(
-        patterns: ['분석 중 오류가 발생했습니다.'],
+      return BloodGlucoseAnalysisResult(
+        patterns: ['AI 설명 생성 중 오류가 발생했습니다.'],
         recommendations: ['잠시 후 다시 시도해주세요.'],
         reportText: '',
-        rating: 0.5,
+        rating: assessment.finalRating,
+        lowRiskLevel: assessment.lowRiskLevel,
+        highRiskLevel: assessment.highRiskLevel,
       );
     }
   }

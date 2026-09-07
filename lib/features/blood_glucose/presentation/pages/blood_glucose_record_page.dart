@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dangdang/features/blood_glucose/presentation/widgets/blood_glucose_risk_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dangdang/core/presentation/widgets/common/custom_icon.dart';
@@ -142,8 +143,8 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
     return const Color(0xFF34A853);
   }
 
-  Widget _buildRatingView(double rating) {
-    final ratingColor = _ratingColor(rating);
+  Widget _buildRatingView(double? rating) {
+    final ratingColor = rating == null ? Colors.grey : _ratingColor(rating);
 
     return Container(
       width: double.infinity,
@@ -154,7 +155,9 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
         border: Border.all(color: ratingColor.withOpacity(0.24)),
       ),
       child: Text(
-        _ratingLabel(rating),
+        rating == null
+            ? '평가할 수 없음\n목표 판정이 가능한 유효한 공복·식전·식후 기록이 필요합니다.'
+            : _ratingLabel(rating),
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w800,
           color: ratingColor,
@@ -187,8 +190,30 @@ class _BloodSugarRecordPageState extends State<BloodSugarRecordPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_outline_rounded,
+                      color: Color(0xFFF4B400),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '평점',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 _buildRatingView(result.rating),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
+                BloodGlucoseRiskView(
+                  lowRiskLevel: result.lowRiskLevel,
+                  highRiskLevel: result.highRiskLevel,
+                ),
+                const SizedBox(height: 32),
                 Row(
                   children: [
                     const Icon(
