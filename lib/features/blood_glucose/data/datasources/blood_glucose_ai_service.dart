@@ -25,6 +25,8 @@ class BloodGlucoseAIService {
           recommendations: ['먼저 혈당을 기록하고 AI 분석을 받아보세요!'],
           reportText: '',
           rating: null,
+          lowRiskLevel: null,
+          highRiskLevel: null,
         );
       }
 
@@ -60,6 +62,8 @@ class BloodGlucoseAIService {
       return BloodGlucoseAnalysisResult.fromJson(
         responseData,
         rating: assessment.finalRating,
+        lowRiskLevel: assessment.lowRiskLevel,
+        highRiskLevel: assessment.highRiskLevel,
       );
     } catch (e) {
       return BloodGlucoseAnalysisResult(
@@ -67,6 +71,8 @@ class BloodGlucoseAIService {
         recommendations: ['잠시 후 다시 시도해주세요.'],
         reportText: '',
         rating: assessment.finalRating,
+        lowRiskLevel: assessment.lowRiskLevel,
+        highRiskLevel: assessment.highRiskLevel,
       );
     }
   }

@@ -62,7 +62,6 @@ class MealAiService {
       return const MealHabitAnalysisResult(
         patterns: [],
         recommendations: [],
-        rating: 0.5,
       );
     }
 
@@ -83,7 +82,6 @@ class MealAiService {
     return MealHabitAnalysisResult(
       patterns: _readStringList(decoded['patterns']),
       recommendations: _readStringList(decoded['recommendations']),
-      rating: _readRating(decoded['rating']),
     );
   }
 
@@ -126,21 +124,14 @@ class MealAiService {
         .toList();
   }
 
-  double _readRating(dynamic value) {
-    final parsed = parseDouble(value, defaultValue: 0.5);
-    final clamped = parsed.clamp(0.5, 5.0).toDouble();
-    return (clamped * 2).round() / 2;
-  }
 }
 
 class MealHabitAnalysisResult {
   const MealHabitAnalysisResult({
     required this.patterns,
     required this.recommendations,
-    required this.rating,
   });
 
   final List<String> patterns;
   final List<String> recommendations;
-  final double rating;
 }

@@ -1,6 +1,7 @@
 import 'package:dangdang/core/ai/gemini/gemini_client.dart';
 import 'package:dangdang/features/blood_glucose/data/datasources/blood_glucose_ai_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dangdang/features/blood_glucose/domain/services/blood_glucose_risk_calculator.dart';
 
 import 'blood_glucose_risk_calculator_test.dart' show record;
 
@@ -25,6 +26,24 @@ class FakeGeminiClient extends Fake implements GeminiClient {
 }
 
 void main() {
+  for (final fail in [false, true]) {
+    test(
+      'preserves separate local risk levels when AI failure is $fail',
+      () async {
+        final client = FakeGeminiClient()..fail = fail;
+        final result = await BloodGlucoseAIService(client: client)
+            .analyzeBloodSugarHabits(
+              records: [record(40)],
+              rangeLabel: '전체',
+              timeFilter: '전체',
+              diabetesType: '2형',
+            );
+        expect(result.lowRiskLevel, BloodGlucoseRiskLevel.high);
+        expect(result.highRiskLevel, BloodGlucoseRiskLevel.low);
+      },
+    );
+  }
+
   test(
     'uses local rating and sends metrics while requesting only text fields',
     () async {

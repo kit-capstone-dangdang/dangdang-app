@@ -7,6 +7,8 @@ enum BloodGlucoseRiskLevel { low, moderate, high }
 class BloodGlucoseRiskAssessment {
   final double? lbgi;
   final double? hbgi;
+  final BloodGlucoseRiskLevel? lowRiskLevel;
+  final BloodGlucoseRiskLevel? highRiskLevel;
   final BloodGlucoseRiskLevel? riskLevel;
   final double? targetRate;
   final double? finalRating;
@@ -14,6 +16,8 @@ class BloodGlucoseRiskAssessment {
   const BloodGlucoseRiskAssessment({
     required this.lbgi,
     required this.hbgi,
+    required this.lowRiskLevel,
+    required this.highRiskLevel,
     required this.riskLevel,
     required this.targetRate,
     required this.finalRating,
@@ -54,16 +58,25 @@ BloodGlucoseRiskAssessment calculateBloodGlucoseRisk(
   // Both indices use ALL valid measurements, including the opposite risk side.
   final lbgi = validCount == 0 ? null : lowRiskSum / validCount;
   final hbgi = validCount == 0 ? null : highRiskSum / validCount;
-  final BloodGlucoseRiskLevel? riskLevel;
-  if (lbgi == null || hbgi == null) {
-    riskLevel = null;
-  } else if (lbgi > 5 || hbgi > 9) {
-    riskLevel = BloodGlucoseRiskLevel.high;
-  } else if (lbgi > 2.5 || hbgi > 4.5) {
-    riskLevel = BloodGlucoseRiskLevel.moderate;
-  } else {
-    riskLevel = BloodGlucoseRiskLevel.low;
-  }
+  final lowRiskLevel = lbgi == null
+      ? null
+      : lbgi > 5
+      ? BloodGlucoseRiskLevel.high
+      : lbgi > 2.5
+      ? BloodGlucoseRiskLevel.moderate
+      : BloodGlucoseRiskLevel.low;
+  final highRiskLevel = hbgi == null
+      ? null
+      : hbgi > 9
+      ? BloodGlucoseRiskLevel.high
+      : hbgi > 4.5
+      ? BloodGlucoseRiskLevel.moderate
+      : BloodGlucoseRiskLevel.low;
+  final riskLevel = lowRiskLevel == null || highRiskLevel == null
+      ? null
+      : lowRiskLevel.index >= highRiskLevel.index
+      ? lowRiskLevel
+      : highRiskLevel;
 
   final targetRate = targetCount == 0 ? null : metTargetCount / targetCount;
   // Service-specific star display caps, not clinical rating thresholds.
@@ -80,6 +93,8 @@ BloodGlucoseRiskAssessment calculateBloodGlucoseRisk(
   return BloodGlucoseRiskAssessment(
     lbgi: lbgi,
     hbgi: hbgi,
+    lowRiskLevel: lowRiskLevel,
+    highRiskLevel: highRiskLevel,
     riskLevel: riskLevel,
     targetRate: targetRate,
     finalRating: baseRating == null || cap == null

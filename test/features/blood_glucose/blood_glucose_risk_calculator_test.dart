@@ -12,6 +12,25 @@ BloodGlucoseRecord record(int bg, [String state = '공복']) => BloodGlucoseReco
 );
 
 void main() {
+  test('exposes each risk level using the existing index thresholds', () {
+    for (final sample in [
+      (100, BloodGlucoseRiskLevel.low, BloodGlucoseRiskLevel.low),
+      (80, BloodGlucoseRiskLevel.moderate, BloodGlucoseRiskLevel.low),
+      (40, BloodGlucoseRiskLevel.high, BloodGlucoseRiskLevel.low),
+      (170, BloodGlucoseRiskLevel.low, BloodGlucoseRiskLevel.moderate),
+      (250, BloodGlucoseRiskLevel.low, BloodGlucoseRiskLevel.high),
+    ]) {
+      final result = calculateBloodGlucoseRisk([record(sample.$1)]);
+      expect(result.lowRiskLevel, sample.$2);
+      expect(result.highRiskLevel, sample.$3);
+      expect(result.riskLevel!.index, greaterThanOrEqualTo(sample.$2.index));
+      expect(result.riskLevel!.index, greaterThanOrEqualTo(sample.$3.index));
+    }
+    final empty = calculateBloodGlucoseRisk([]);
+    expect(empty.lowRiskLevel, isNull);
+    expect(empty.highRiskLevel, isNull);
+  });
+
   test('low risk permits five stars', () {
     final result = calculateBloodGlucoseRisk([record(100)]);
     expect(result.lbgi, closeTo(0.4820511254, 1e-8));
