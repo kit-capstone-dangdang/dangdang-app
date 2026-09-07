@@ -1,6 +1,5 @@
 import 'package:dangdang/app/presentation/navigation/main_shell.dart';
-import 'package:dangdang/features/auth/presentation/providers/login_view_model_provider.dart';
-import 'package:dangdang/features/auth/presentation/viewmodels/login_view_model.dart';
+import 'package:dangdang/features/auth/presentation/providers/login_model_provider.dart';
 import 'package:dangdang/features/auth/presentation/pages/signup_page.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_button.dart';
 import 'package:dangdang/features/auth/presentation/widgets/auth_label.dart';
@@ -12,8 +11,8 @@ class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
   Future<void> _signIn(BuildContext context, WidgetRef ref) async {
-    final viewModel = ref.read(loginViewModelProvider);
-    final message = await viewModel.signIn();
+    final model = ref.read(loginProvider);
+    final message = await model.signIn();
 
     if (!context.mounted) {
       return;
@@ -34,7 +33,7 @@ class LoginPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(loginViewModelProvider);
+    final model = ref.watch(loginProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -46,9 +45,12 @@ class LoginPage extends ConsumerWidget {
               SizedBox(
                 width: 90,
                 height: 90,
-                child: Image.asset(
-                  'assets/images/app_icon.png',
-                  fit: BoxFit.contain,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'assets/images/app_icon3.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -141,7 +143,7 @@ class LoginPage extends ConsumerWidget {
                     const AuthLabel(text: '이메일 주소'),
                     const SizedBox(height: 8),
                     AuthTextField(
-                      controller: viewModel.emailController,
+                      controller: model.emailController,
                       hintText: 'name@example.com',
                       icon: Icons.mail_outline,
                       keyboardType: TextInputType.emailAddress,
@@ -150,14 +152,14 @@ class LoginPage extends ConsumerWidget {
                     const AuthLabel(text: '비밀번호'),
                     const SizedBox(height: 8),
                     AuthTextField(
-                      controller: viewModel.passwordController,
+                      controller: model.passwordController,
                       hintText: '비밀번호를 입력하세요',
                       icon: Icons.lock_outline,
-                      obscureText: viewModel.obscurePassword,
+                      obscureText: model.obscurePassword,
                       suffixIcon: IconButton(
-                        onPressed: viewModel.toggleObscurePassword,
+                        onPressed: model.toggleObscurePassword,
                         icon: Icon(
-                          viewModel.obscurePassword
+                          model.obscurePassword
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
                           color: const Color(0xFFC4C6D0),
@@ -166,7 +168,7 @@ class LoginPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 32),
                     AuthButton(
-                      text: viewModel.isSubmitting ? '로그인 중..' : '로그인',
+                      text: model.isSubmitting ? '로그인 중..' : '로그인',
                       onPressed: () => _signIn(context, ref),
                     ),
                   ],

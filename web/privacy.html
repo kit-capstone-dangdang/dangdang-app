@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>당당하게 개인정보처리방침</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f6f8;
+        --card: #ffffff;
+        --text: #1f2933;
+        --muted: #52606d;
+        --border: #d9e2ec;
+        --accent: #2f6fed;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px 22px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        color: #102a43;
+      }
+
+      h1 {
+        font-size: 2rem;
+        line-height: 1.3;
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-size: 1.35rem;
+        margin-top: 36px;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      h3 {
+        font-size: 1.05rem;
+        margin-top: 22px;
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin: 0 0 14px;
+      }
+
+      ul {
+        margin: 0 0 16px;
+        padding-left: 22px;
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+
+      .lead {
+        color: var(--muted);
+      }
+
+      .effective-date {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #eef4ff;
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .contact {
+        padding: 16px 18px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #f8fbff;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding: 16px 12px 32px;
+        }
+
+        .card {
+          padding: 22px 16px;
+          border-radius: 14px;
+        }
+
+        h1 {
+          font-size: 1.6rem;
+        }
+
+        h2 {
+          font-size: 1.2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <article class="card">
+        <h1>당당하게 개인정보처리방침</h1>
+        <p class="lead">
+          당당하게(이하 "서비스")는 이용자의 개인정보를 중요하게 생각하며,
+          관련 법령을 준수하여 개인정보를 처리하고 있습니다.
+        </p>
+        <p class="lead">
+          본 개인정보처리방침은 당당하게 애플리케이션을 이용하는 과정에서
+          어떠한 정보를 수집하고, 어떤 목적으로 이용하며, 어떻게 관리하는지
+          안내하기 위한 것입니다.
+        </p>
+        <p class="effective-date">시행일: 2026년 8월 13일</p>
+
+        <h2>1. 개인정보의 처리 목적</h2>
+        <p>서비스는 다음의 목적으로 개인정보를 처리합니다.</p>
+        <ul>
+          <li>회원가입 및 사용자 식별</li>
+          <li>로그인 및 계정 관리</li>
+          <li>사용자 프로필 관리</li>
+          <li>혈당 기록 저장 및 관리</li>
+          <li>식단 기록 저장 및 관리</li>
+          <li>음식 이미지 분석</li>
+          <li>AI를 활용한 식단, 혈당 및 건강 관련 분석 기능 제공</li>
+          <li>AI 채팅 기능 제공</li>
+          <li>서비스 운영 및 사용자 요청 처리</li>
+          <li>회원탈퇴 및 개인정보 삭제 처리</li>
+        </ul>
+        <p>수집된 개인정보는 위 목적의 범위 내에서 이용합니다.</p>
+
+        <h2>2. 처리하는 개인정보 항목</h2>
+        <p>
+          서비스는 회원가입 및 서비스 이용 과정에서 다음과 같은 정보를 처리할 수
+          있습니다.
+        </p>
+
+        <h3>회원 및 프로필 정보</h3>
+        <ul>
+          <li>이름</li>
+          <li>닉네임</li>
+          <li>이메일 주소</li>
+          <li>생년월일</li>
+          <li>성별</li>
+          <li>키</li>
+          <li>몸무게</li>
+          <li>당뇨 유형</li>
+          <li>Firebase Authentication에서 생성되는 사용자 식별자(UID)</li>
+          <li>사용자가 등록한 프로필 이미지</li>
+        </ul>
+
+        <h3>혈당 관리 정보</h3>
+        <ul>
+          <li>혈당 수치</li>
+          <li>측정 일시</li>
+          <li>식사 상태</li>
+          <li>사용자가 입력한 메모</li>
+        </ul>
+
+        <h3>식단 관리 정보</h3>
+        <ul>
+          <li>식사 일시</li>
+          <li>식사 유형</li>
+          <li>사용자가 등록한 음식 이미지</li>
+          <li>음식 정보</li>
+          <li>영양 정보</li>
+          <li>AI 분석 결과 및 코멘트</li>
+        </ul>
+
+        <h3>AI 채팅 정보</h3>
+        <ul>
+          <li>사용자가 입력한 질문 및 대화 내용</li>
+          <li>AI 답변</li>
+          <li>
+            AI 답변 생성을 위해 필요한 범위의 프로필, 혈당 및 식단 정보
+          </li>
+        </ul>
+
+        <h2>3. 건강 관련 정보의 처리</h2>
+        <p>
+          서비스는 혈당 및 식단 관리와 관련된 기능을 제공하기 위해 당뇨 유형, 키,
+          몸무게, 혈당 기록, 식단 기록 등 건강과 관련된 정보를 처리할 수
+          있습니다.
+        </p>
+        <p>
+          해당 정보는 혈당 기록 관리, 식단 관리, 건강 관련 분석 및 AI 기반 기능을
+          제공하기 위한 목적으로 이용됩니다.
+        </p>
+        <p>
+          당당하게에서 제공하는 AI 분석 및 건강 관련 정보는 사용자의 건강 관리를
+          보조하기 위한 참고 정보입니다.
+        </p>
+        <p>
+          서비스에서 제공되는 정보는 의료인의 진단, 치료 또는 전문적인 의학적
+          조언을 대체하지 않습니다.
+        </p>
+
+        <h2>4. AI 기능 이용 시 데이터 처리</h2>
+        <p>
+          서비스는 음식 분석, 혈당 분석, 식습관 분석 및 AI 채팅 기능을 제공하기
+          위해 Google의 Gemini AI 서비스를 이용합니다.
+        </p>
+        <p>각 기능에 따라 다음 정보가 Gemini로 전송되어 처리될 수 있습니다.</p>
+
+        <h3>음식 사진 분석</h3>
+        <ul>
+          <li>사용자가 등록한 음식 이미지</li>
+        </ul>
+        <p>
+          음식 사진 분석 시 사용자 UID, 이메일, 혈당 기록, 프로필 정보 및 기존
+          식단 기록은 함께 전달되지 않습니다.
+        </p>
+
+        <h3>혈당 분석</h3>
+        <ul>
+          <li>혈당 측정 일시</li>
+          <li>혈당 수치</li>
+          <li>식사 상태</li>
+          <li>당뇨 유형</li>
+          <li>분석 기간 및 범위와 관련된 정보</li>
+        </ul>
+
+        <h3>AI 채팅</h3>
+        <p>AI 채팅 기능을 제공하기 위해 다음 정보가 전달될 수 있습니다.</p>
+        <ul>
+          <li>닉네임</li>
+          <li>생년월일</li>
+          <li>성별</li>
+          <li>키</li>
+          <li>몸무게</li>
+          <li>당뇨 유형</li>
+          <li>최근 혈당 기록</li>
+          <li>혈당 기록에 작성한 메모</li>
+          <li>최근 식단 기록</li>
+          <li>최근 AI 대화 내용</li>
+          <li>사용자가 입력한 현재 질문</li>
+        </ul>
+        <p>
+          AI 채팅 과정에서 음식 이미지 자체, 이미지 URL, Firebase UID, 이메일
+          주소 및 프로필 이미지는 Gemini에 직접 전달되지 않습니다.
+        </p>
+
+        <h3>음식 정보 보정</h3>
+        <ul>
+          <li>음식 이름</li>
+        </ul>
+
+        <h3>식습관 분석</h3>
+        <ul>
+          <li>식사 일시</li>
+          <li>식사 유형</li>
+          <li>음식 정보</li>
+          <li>영양 정보</li>
+          <li>기존 AI 분석 결과</li>
+          <li>당뇨 유형</li>
+          <li>분석 범위 정보</li>
+        </ul>
+        <p>
+          식습관 분석 과정에서 음식 이미지 자체, Firebase UID 및 이미지 URL은
+          Gemini에 직접 전달되지 않습니다.
+        </p>
+        <p>
+          AI를 통해 생성된 결과는 건강관리를 보조하기 위한 참고 정보이며, 항상
+          정확하거나 완전한 결과를 보장하지 않습니다.
+        </p>
+
+        <h2>5. 개인정보의 보유 및 이용기간</h2>
+        <p>
+          서비스는 개인정보의 처리 목적을 달성하기 위해 필요한 기간 동안
+          이용자의 개인정보를 보유합니다.
+        </p>
+        <p>
+          회원이 회원탈퇴를 요청하는 경우 해당 계정과 연결된 개인정보를 삭제하는
+          것을 원칙으로 합니다.
+        </p>
+        <p>
+          다만 관련 법령에 따라 일정 기간 동안 정보를 보관해야 하는 경우에는 해당
+          법령에서 정한 기간 동안 보관할 수 있습니다.
+        </p>
+
+        <h2>6. 외부 서비스 이용 및 개인정보 처리</h2>
+        <p>
+          서비스는 기능 제공을 위해 Google에서 제공하는 Firebase 및 Gemini
+          서비스를 이용합니다.
+        </p>
+
+        <h3>Google Firebase</h3>
+        <p>서비스는 다음 기능을 위해 Firebase를 이용합니다.</p>
+        <ul>
+          <li>Firebase Authentication: 회원 인증 및 계정 관리</li>
+          <li>
+            Cloud Firestore: 회원정보, 혈당 기록, 식단 기록 등 서비스 데이터 저장
+          </li>
+          <li>Firebase Storage: 식단 이미지 및 프로필 이미지 저장</li>
+        </ul>
+        <p>
+          Firebase를 통해 처리되는 정보에는 Google의 관련 개인정보 보호정책 및
+          서비스 정책이 적용될 수 있습니다.
+        </p>
+
+        <h3>Google Gemini</h3>
+        <p>서비스는 다음 AI 기능을 제공하기 위해 Google Gemini를 이용합니다.</p>
+        <ul>
+          <li>음식 이미지 분석</li>
+          <li>혈당 기록 분석</li>
+          <li>음식 정보 보정</li>
+          <li>식습관 분석</li>
+          <li>AI 채팅</li>
+        </ul>
+        <p>
+          Gemini에는 각 기능을 제공하기 위해 필요한 범위의 정보만 전달됩니다.
+        </p>
+
+        <h2>7. 개인정보의 제3자 제공</h2>
+        <p>서비스는 이용자의 개인정보를 임의로 판매하지 않습니다.</p>
+        <p>
+          서비스 제공을 위해 필요한 외부 서비스 이용, 이용자의 사전 동의가 있는
+          경우, 또는 법령에 따라 제공이 요구되는 경우에는 필요한 범위에서 정보가
+          처리 또는 제공될 수 있습니다.
+        </p>
+
+        <h2>8. 개인정보의 삭제 및 회원탈퇴</h2>
+        <p>
+          이용자는 앱에서 제공하는 회원탈퇴 기능을 통해 언제든지 계정 삭제를
+          요청할 수 있습니다.
+        </p>
+        <p>
+          회원탈퇴가 완료되면 해당 사용자와 연결된 다음 정보를 삭제하는 것을
+          원칙으로 합니다.
+        </p>
+        <ul>
+          <li>Firebase Authentication 사용자 계정</li>
+          <li>회원 및 프로필 정보</li>
+          <li>닉네임 관련 정보</li>
+          <li>혈당 기록</li>
+          <li>식단 기록</li>
+          <li>사용자가 등록한 식단 이미지</li>
+          <li>사용자가 등록한 프로필 이미지</li>
+        </ul>
+        <p>
+          다만 관련 법령에 따라 보관할 의무가 있는 정보가 있는 경우에는 해당
+          법령에서 정한 기간 동안 보관할 수 있습니다.
+        </p>
+        <p>
+          개인정보 및 계정 삭제와 관련하여 추가적인 문의가 필요한 경우 아래
+          이메일을 통해 요청할 수 있습니다.
+        </p>
+        <p>이메일: <a href="mailto:rhaudwns4981@naver.com">rhaudwns4981@naver.com</a></p>
+
+        <h2>9. 이용자의 권리</h2>
+        <p>
+          이용자는 자신의 개인정보와 관련하여 다음과 같은 권리를 행사할 수
+          있습니다.
+        </p>
+        <ul>
+          <li>개인정보 확인</li>
+          <li>개인정보 수정</li>
+          <li>개인정보 삭제</li>
+          <li>회원탈퇴</li>
+          <li>개인정보 처리에 관한 문의</li>
+        </ul>
+        <p>
+          관련 기능이 앱에서 제공되는 경우 해당 기능을 이용할 수 있으며,
+          추가적인 요청은 아래 연락처를 통해 할 수 있습니다.
+        </p>
+
+        <h2>10. 개인정보의 안전성 확보</h2>
+        <p>
+          서비스는 이용자의 개인정보가 분실, 도난, 유출, 변조 또는 훼손되지
+          않도록 합리적인 기술적·관리적 보호조치를 적용하기 위해 노력합니다.
+        </p>
+        <p>
+          서비스는 Firebase Authentication을 이용한 사용자 인증 및 사용자별
+          데이터 접근 제한 등을 통해 개인정보를 보호합니다.
+        </p>
+
+        <h2>11. 아동의 개인정보</h2>
+        <p>
+          서비스는 아동을 주요 대상으로 제작된 서비스가 아닙니다.
+        </p>
+        <p>
+          향후 서비스의 이용 대상 연령 또는 관련 정책이 변경되는 경우 관련 법령에
+          따라 필요한 개인정보 보호조치를 적용합니다.
+        </p>
+
+        <h2>12. 개인정보처리방침의 변경</h2>
+        <p>
+          본 개인정보처리방침은 관련 법령, 서비스 기능 또는 개인정보 처리 방식의
+          변경에 따라 수정될 수 있습니다.
+        </p>
+        <p>
+          중요한 변경사항이 있는 경우 앱 또는 개인정보처리방침 페이지 등을 통해
+          이용자에게 안내합니다.
+        </p>
+
+        <h2>13. 개인정보 관련 문의</h2>
+        <p>개인정보 처리와 관련한 문의는 다음 연락처를 통해 할 수 있습니다.</p>
+        <div class="contact">
+          <p>서비스명: 당당하게</p>
+          <p>서비스 제공자: Kobeay</p>
+          <p>이메일: <a href="mailto:rhaudwns4981@naver.com">rhaudwns4981@naver.com</a></p>
+        </div>
+
+        <h2>14. 시행일</h2>
+        <p>본 개인정보처리방침은 2026년 8월 13일부터 시행합니다.</p>
+      </article>
+    </main>
+  </body>
+</html>
